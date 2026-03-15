@@ -1,0 +1,45 @@
+package "jasmin" (
+  directory = "jasmin"
+  description = ""
+  requires = "angstrom batteries.unthreaded jasmin.uint63 menhirLib zarith"
+  archive(byte) = "jasmin.cma"
+  archive(native) = "jasmin.cmxa"
+  plugin(byte) = "jasmin.cma"
+  plugin(native) = "jasmin.cmxs"
+)
+package "linter" (
+  directory = "linter"
+  description = ""
+  requires = "cmdliner jasmin.jasmin"
+  archive(byte) = "linter.cma"
+  archive(native) = "linter.cmxa"
+  plugin(byte) = "linter.cma"
+  plugin(native) = "linter.cmxs"
+)
+package "uint63" (
+  directory = "uint63"
+  description = ""
+  requires = ""
+  archive(byte) = ""
+  archive(native) = ""
+  plugin(byte) = ""
+  plugin(native) = ""
+)
+package "uint63-js" (
+  directory = "uint63-js"
+  description = ""
+  requires = "jasmin.uint63"
+  archive(byte) = "uint63_js.cma"
+  archive(native) = "uint63_js.cmxa"
+  plugin(byte) = "uint63_js.cma"
+  plugin(native) = "uint63_js.cmxs"
+)
+package "uint63-native" (
+  directory = "uint63-native"
+  description = ""
+  requires = "jasmin.uint63"
+  archive(byte) = "uint63_native.cma"
+  archive(native) = "uint63_native.cmxa"
+  plugin(byte) = "uint63_native.cma"
+  plugin(native) = "uint63_native.cmxs"
+)

@@ -1,0 +1,281 @@
+type token =
+    WHILE
+  | UNDERSCORE
+  | UNALIGNED
+  | T_W of Syntax.swsize
+  | T_INT_CAST of Syntax.sign
+  | T_INT
+  | T_BOOL
+  | TYPE
+  | TRUE
+  | TO
+  | SWSIZE of Syntax.swsize
+  | SVSIZE of Syntax.svsize
+  | STRING of string
+  | STAR
+  | STACK
+  | SLASH of Syntax.sign option
+  | SHARP
+  | SEMICOLON
+  | RPAREN
+  | ROR
+  | ROL
+  | RETURN
+  | REQUIRE
+  | REG
+  | RBRACKET
+  | RBRACE
+  | RARROW
+  | QUESTIONMARK
+  | POINTER
+  | PLUS
+  | PIPEPIPE
+  | PIPE
+  | PERCENT of Syntax.sign option
+  | PARAM
+  | NID of string
+  | NAMESPACE
+  | MUTABLE
+  | MINUS
+  | LTLT
+  | LT of Syntax.sign option
+  | LPAREN
+  | LE of Syntax.sign option
+  | LBRACKET
+  | LBRACE
+  | INT of string
+  | INLINE
+  | IF
+  | HAT
+  | GTGT of Syntax.sign option
+  | GT of Syntax.sign option
+  | GLOBAL
+  | GE of Syntax.sign option
+  | FROM
+  | FOR
+  | FN
+  | FALSE
+  | EXPORT
+  | EXEC
+  | EQEQ
+  | EQ
+  | EOF
+  | ELSE
+  | DOWNTO
+  | DOT
+  | CONSTANT
+  | COMMA
+  | COLONCOLON
+  | COLON
+  | BANGEQ
+  | BANG
+  | ARRAYINIT
+  | AMPAMP
+  | AMP
+  | ALIGNED
+val menhir_begin_marker : int
+val xv_writable : Syntax.writable
+val xv_var : Annotations.pident
+val xv_utype_array : Syntax.psizetype
+val xv_utype : Syntax.swsize
+val xv_unaligned : [ `Aligned | `Unaligned ]
+val xv_tuple1_plvalue_ : Syntax.plvalue list
+val xv_tuple_var_ : Annotations.pident list
+val xv_tuple_annot_stor_type_ :
+  (Annotations.annotations * Syntax.pstotype) list
+val xv_top_annotation : Annotations.annotations
+val xv_top : Syntax.pitem
+val xv_swsize : Syntax.swsize
+val xv_svsize : Syntax.svsize
+val xv_struct_annot : Annotations.annotations
+val xv_storage : Syntax.pstorage
+val xv_stor_type : Syntax.pstotype
+val xv_simple_attribute : Annotations.simple_attribute
+val xv_separated_nonempty_list_option_COMMA__var_ : Annotations.pident list
+val xv_separated_nonempty_list_empty_var_ : Annotations.pident list
+val xv_separated_nonempty_list_COMMA_var_ : Annotations.pident list
+val xv_separated_nonempty_list_COMMA_range_ : (string * string) list
+val xv_separated_nonempty_list_COMMA_plvalue_ : Syntax.plvalue list
+val xv_separated_nonempty_list_COMMA_pexpr_ : Syntax.pexpr list
+val xv_separated_nonempty_list_COMMA_loc_decl__ :
+  (Annotations.pident * Syntax.pexpr) Location.located list
+val xv_separated_nonempty_list_COMMA_annotation_ : Annotations.annotations
+val xv_separated_nonempty_list_COMMA_annot_stor_type_ :
+  (Annotations.annotations * Syntax.pstotype) list
+val xv_separated_nonempty_list_COMMA_annot_pparamdecl_ :
+  (Annotations.annotations * Syntax.paramdecls) list
+val xv_separated_nonempty_list_COLONCOLON_NID_ : string list
+val xv_separated_list_COMMA_var_ : Annotations.pident list
+val xv_separated_list_COMMA_range_ : (string * string) list
+val xv_separated_list_COMMA_pexpr_ : Syntax.pexpr list
+val xv_separated_list_COMMA_annotation_ : Annotations.annotations
+val xv_separated_list_COMMA_annot_stor_type_ :
+  (Annotations.annotations * Syntax.pstotype) list
+val xv_separated_list_COMMA_annot_pparamdecl_ :
+  (Annotations.annotations * Syntax.paramdecls) list
+val xv_rtuple1_plvalue_ : Syntax.plvalue list
+val xv_rtuple1_pexpr_ : Syntax.pexpr list
+val xv_rtuple_var_ : Annotations.pident list
+val xv_rtuple_range_ : (string * string) list
+val xv_rtuple_pexpr_ : Syntax.pexpr list
+val xv_rtuple_annot_stor_type_ :
+  (Annotations.annotations * Syntax.pstotype) list
+val xv_rtuple_annot_pparamdecl_ :
+  (Annotations.annotations * Syntax.paramdecls) list
+val xv_range : string * string
+val xv_qident : string
+val xv_ptype_r : Syntax.ptype_r
+val xv_ptype : Syntax.ptype
+val xv_ptr : Syntax.ptr
+val xv_prim : Annotations.pident
+val xv_prequire1 : Syntax.prequire
+val xv_prequire : Annotations.pident option * Syntax.prequire list
+val xv_prefix_RARROW_tuple_annot_stor_type__ :
+  (Annotations.annotations * Syntax.pstotype) list
+val xv_prefix_IF_pexpr_ : Syntax.pexpr
+val xv_pparamdecl_empty_ : Syntax.paramdecls
+val xv_pparam : Syntax.pparam
+val xv_pointer : Syntax.writable option
+val xv_plvalues : Syntax.plvals
+val xv_plvalue_r : Syntax.plvalue_r
+val xv_plvalue : Syntax.plvalue
+val xv_pinstr_r : Syntax.pinstr_r
+val xv_pinstr : Syntax.pinstr
+val xv_pif : Syntax.pinstr_r
+val xv_pglobal : Syntax.pglobal
+val xv_pgexpr : Syntax.gpexpr
+val xv_pfundef : Syntax.pfundef
+val xv_pfunbody : Syntax.pfunbody
+val xv_pexpr_r : Syntax.pexpr_r
+val xv_pexpr : Syntax.pexpr
+val xv_pexec : Syntax.pexec
+val xv_peqop : Syntax.peqop
+val xv_peop2 : Syntax.peop2
+val xv_peop1 : Syntax.peop1
+val xv_pelseif : Syntax.pblock_r
+val xv_pelse : Syntax.pblock
+val xv_pblock_r : Syntax.pblock_r
+val xv_pblock : Syntax.pblock
+val xv_parens_tuple_range_ : (string * string) list
+val xv_parens_tuple_pexpr_ : Syntax.pexpr list
+val xv_parens_tuple_annot_pparamdecl_ :
+  (Annotations.annotations * Syntax.paramdecls) list
+val xv_parens_var_ : Annotations.pident
+val xv_parens_svsize_ : Syntax.svsize
+val xv_parens_rtuple1_plvalue__ : Syntax.plvalue list
+val xv_parens_rtuple_var__ : Annotations.pident list
+val xv_parens_rtuple_range__ : (string * string) list
+val xv_parens_rtuple_pexpr__ : Syntax.pexpr list
+val xv_parens_rtuple_annot_stor_type__ :
+  (Annotations.annotations * Syntax.pstotype) list
+val xv_parens_rtuple_annot_pparamdecl__ :
+  (Annotations.annotations * Syntax.paramdecls) list
+val xv_parens_pexpr_ : Syntax.pexpr
+val xv_parens_cast_ : Syntax.cast
+val xv_option_writable_ : Syntax.writable option
+val xv_option_unaligned_ : [ `Aligned | `Unaligned ] option
+val xv_option_prefix_RARROW_tuple_annot_stor_type___ :
+  (Annotations.annotations * Syntax.pstotype) list option
+val xv_option_prefix_IF_pexpr__ : Syntax.pexpr option
+val xv_option_pointer_ : Syntax.writable option option
+val xv_option_pblock_ : Syntax.pblock option
+val xv_option_loc_castop1__ : Syntax.castop
+val xv_option_from_ : Annotations.pident option
+val xv_option_call_conv_ : Syntax.pcall_conv option
+val xv_option_attribute_ : Annotations.attribute option
+val xv_option_arr_access_len_ : Syntax.pexpr option
+val xv_option_access_type_ :
+  (unit option * Syntax.swsize Location.located) option
+val xv_option___anonymous_1_ : Annotations.pident list option
+val xv_option_DOT_ : unit option
+val xv_option_COMMA_ : unit option
+val xv_option_COLON_ : unit option
+val xv_nonempty_list_prequire1_ : Syntax.prequire list
+val xv_module_ : Syntax.pprogram
+val xv_mem_access : Syntax.mem_access
+val xv_loption_separated_nonempty_list_COMMA_var__ : Annotations.pident list
+val xv_loption_separated_nonempty_list_COMMA_range__ : (string * string) list
+val xv_loption_separated_nonempty_list_COMMA_pexpr__ : Syntax.pexpr list
+val xv_loption_separated_nonempty_list_COMMA_annotation__ :
+  Annotations.annotations
+val xv_loption_separated_nonempty_list_COMMA_annot_stor_type__ :
+  (Annotations.annotations * Syntax.pstotype) list
+val xv_loption_separated_nonempty_list_COMMA_annot_pparamdecl__ :
+  (Annotations.annotations * Syntax.paramdecls) list
+val xv_loc_utype_ : Syntax.swsize Location.located
+val xv_loc_top_ : Syntax.pitem Location.located
+val xv_loc_simple_attribute_ : Annotations.simple_attribute Location.located
+val xv_loc_qident_ : string Location.located
+val xv_loc_ptype_r_ : Syntax.ptype
+val xv_loc_plvalue_r_ : Syntax.plvalue
+val xv_loc_pinstr_r_ : Syntax.pinstr_r Location.located
+val xv_loc_pif_ : Syntax.pinstr_r Location.located
+val xv_loc_pexpr_r_ : Syntax.pexpr
+val xv_loc_pelseif_ : Syntax.pblock
+val xv_loc_pblock_r_ : Syntax.pblock
+val xv_loc_option___anonymous_1__ :
+  Annotations.pident list option Location.located
+val xv_loc_keyword_ : string Location.located
+val xv_loc_decl_ : (Annotations.pident * Syntax.pexpr) Location.located
+val xv_loc_castop1_ : Syntax.castop1 Location.located
+val xv_loc_braces_struct_annot__ : Annotations.annotations Location.located
+val xv_loc_annotation_ : Annotations.annotation Location.located
+val xv_loc___anonymous_0_ :
+  (Annotations.pident * Syntax.pexpr list) Location.located
+val xv_loc_STRING_ : Syntax.prequire
+val xv_list_top_annotation_ : Annotations.annotations list
+val xv_list_pinstr_ : Syntax.pblock_r
+val xv_list_loc_top__ : Syntax.pprogram
+val xv_keyword : string
+val xv_int : Z.t
+val xv_implicites : Annotations.annotations Location.located
+val xv_ident : Annotations.pident
+val xv_from : Annotations.pident
+val xv_empty : unit
+val xv_delimited_LPAREN_var_RPAREN_ : Annotations.pident
+val xv_delimited_LPAREN_svsize_RPAREN_ : Syntax.svsize
+val xv_delimited_LPAREN_rtuple1_plvalue__RPAREN_ : Syntax.plvalue list
+val xv_delimited_LPAREN_rtuple_var__RPAREN_ : Annotations.pident list
+val xv_delimited_LPAREN_rtuple_range__RPAREN_ : (string * string) list
+val xv_delimited_LPAREN_rtuple_pexpr__RPAREN_ : Syntax.pexpr list
+val xv_delimited_LPAREN_rtuple_annot_stor_type__RPAREN_ :
+  (Annotations.annotations * Syntax.pstotype) list
+val xv_delimited_LPAREN_rtuple_annot_pparamdecl__RPAREN_ :
+  (Annotations.annotations * Syntax.paramdecls) list
+val xv_delimited_LPAREN_pexpr_RPAREN_ : Syntax.pexpr
+val xv_delimited_LPAREN_cast_RPAREN_ : Syntax.cast
+val xv_delimited_LBRACKET_pexpr_RBRACKET_ : Syntax.pexpr
+val xv_delimited_LBRACKET_arr_access_i_RBRACKET_ :
+  (unit option * Syntax.swsize Location.located) option * Syntax.pexpr *
+  Syntax.pexpr option * [ `Aligned | `Unaligned ] option
+val xv_delimited_LBRACE_struct_annot_RBRACE_ : Annotations.annotations
+val xv_delimited_LBRACE_list_pinstr__RBRACE_ : Syntax.pblock_r
+val xv_decl : Annotations.pident * Syntax.pexpr
+val xv_castop1 : Syntax.castop1
+val xv_castop : Syntax.castop
+val xv_cast : Syntax.cast
+val xv_call_conv : Syntax.pcall_conv
+val xv_brackets_pexpr_ : Syntax.pexpr
+val xv_brackets_arr_access_i_ :
+  (unit option * Syntax.swsize Location.located) option * Syntax.pexpr *
+  Syntax.pexpr option * [ `Aligned | `Unaligned ] option
+val xv_braces_struct_annot_ : Annotations.annotations
+val xv_braces_list_pinstr__ : Syntax.pblock_r
+val xv_attribute : Annotations.simple_attribute Location.located
+val xv_arr_access_len : Syntax.pexpr
+val xv_arr_access_i :
+  (unit option * Syntax.swsize Location.located) option * Syntax.pexpr *
+  Syntax.pexpr option * [ `Aligned | `Unaligned ] option
+val xv_arr_access :
+  Warray_.arr_access *
+  (Syntax.swsize Location.located option * Syntax.pexpr *
+   Syntax.pexpr option * [ `Aligned | `Unaligned ] option)
+val xv_annotations : Annotations.annotations
+val xv_annotationlabel : Syntax.prequire
+val xv_annotation : Annotations.annotation
+val xv_annot_stor_type : Annotations.annotations * Syntax.pstotype
+val xv_annot_pparamdecl : Annotations.annotations * Syntax.paramdecls
+val xv_access_type : unit option * Syntax.swsize Location.located
+val xv___anonymous_1 : Annotations.pident list
+val xv___anonymous_0 : Annotations.pident * Syntax.pexpr list
+val menhir_end_marker : int

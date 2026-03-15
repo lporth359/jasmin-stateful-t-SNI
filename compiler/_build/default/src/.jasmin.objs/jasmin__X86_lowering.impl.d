@@ -1,0 +1,1 @@
+src/CIL/x86_lowering.ml: Arch_decl Arch_extra BinInt BinNums Compiler_util Datatypes Eqtype Expr GRing Lea Lowering Obj OtherDefs Pseudo_operator Seq Sopn Ssralg Ssrfun SvExtra Type Utils0 Var Var0 Word0 Word_ssrZ Wsize X86_decl X86_extra X86_instr_decl Z

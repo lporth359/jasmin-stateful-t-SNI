@@ -1,0 +1,1 @@
+src/coreArchFactory.ml: Arch_full Arm_arch_full Arm_decl Glob_options Prog Riscv_arch_full Riscv_decl Utils X86_arch_full X86_decl X86_extra X86_instr_decl X86_lowering

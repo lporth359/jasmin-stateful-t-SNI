@@ -1,0 +1,1 @@
+src/CIL/arm_extra.mli: ARMFopn_core Arch_decl Arch_extra Arch_utils Arm Arm_decl Arm_instr_decl Arm_params_core BinNums Bool Compiler_util Coq_hasDecEq Datatypes EqbOK Eqb_core_defs Eqtype Equality Expr Fexpr Obj Sem_type Seq Sopn Ssralg Type Utils0 Var0 Word0 Wsize

@@ -1,0 +1,1 @@
+src/CIL/arch_decl.mli: Arm_expand_imm BinNums Bool Coq_hasDecEq Datatypes EqbOK Eqb_core_defs Eqtype Equality Expr Flag_combination GRing Ident Label Memory_model Obj Param1 Param1_trivial Prelude Sem_type Seq Shift_kind Sopn Ssralg Ssrbool Ssrnat Syscall_t Type Utils0 Var Var0 Word0 Word_ssrZ Wsize

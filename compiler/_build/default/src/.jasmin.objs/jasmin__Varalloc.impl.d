@@ -1,0 +1,1 @@
+src/varalloc.ml: Alias Arch_full Array Conv E Format Glob_options Global Hf Hv Interval IntervalGraphColoring L List Liveness Location Memory_model Mint Mv Obj Option PrintCommon Printer Prog Sf Sv Utils V Warray_ Word0 Wsize
