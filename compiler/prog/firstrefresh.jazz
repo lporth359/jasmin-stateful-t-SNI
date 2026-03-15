@@ -1,0 +1,25 @@
+
+export 
+fn firstmult(
+#[ shares = { lo = 0, hi = 1, name = "a", t = 2 } ]
+#[ output = { lo = 0, hi = 1, name = "o", t = 2 } ]
+reg ptr u32[2] state, 
+
+#[ randomness = { n = 1 } ]
+reg ptr u32[2] rnd) -> reg ptr u32[2]{
+
+reg u32 reg4, reg5; 
+reg u32[2] out; 
+inline int i; 
+
+for i = 0 to 2 {
+    reg4 = state[i];
+    reg5 = rnd[0];
+    reg4 = reg4 ^ reg5;
+    out[i] = reg4;
+}
+state[0] = out[0];
+state[1] = out[1];
+
+return state;
+}

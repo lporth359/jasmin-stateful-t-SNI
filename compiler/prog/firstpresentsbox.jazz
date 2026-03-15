@@ -1,0 +1,256 @@
+inline 
+fn firstorderadd(reg ptr u32[8] state , reg ptr u32[8] out, inline int i, inline int j, inline int o) -> reg ptr u32[8], reg ptr u32[8] {
+reg u32[2] c;
+c[0] = state[0 + i];
+c[1] = state[0 + j];
+c[0] = c[0] ^ c[1];
+out[0 + o] = c[0];
+c[1] = state[1 + i];
+c[0] = state[j + 1];
+c[1] = c[1] ^ c[0];
+out[1 + o] = c[1];
+return state,out; 
+}
+
+inline 
+fn firstorderadd2(reg ptr u32[8] state , reg ptr u32[8] out, inline int i, inline int j) -> reg ptr u32[8], reg ptr u32[8] {
+reg u32[2] c;
+c[0] = state[0 + i];
+c[1] = out[0 + j];
+c[0] = c[0] ^ c[1];
+out[0 + j] = c[0];
+
+c[1] = state[1 + i];
+c[0] = out[j + 1];
+c[1] = c[1] ^ c[0];
+out[1 + j] = c[1];
+return state,out; 
+}
+
+inline 
+fn firstorderaddone( reg ptr u32[8] out, inline int i, inline int o) -> reg ptr u32[8] {
+reg u32[2] c;
+c[0] = out[0 + i];
+c[0] = c[0] ^ 0xFFFFFFFF;
+out[0 + o] = c[0];
+
+return out; 
+}
+
+inline 
+fn firstorderadd3(reg ptr u32[8] out, inline int i, inline int j) -> reg ptr u32[8] {
+reg u32[2] c;
+c[0] = out[0 + i];
+c[1] = out[0 + j];
+c[0] = c[0] ^ c[1];
+out[0 + j] = c[0];
+
+c[1] = out[1 + i];
+c[0] = out[j + 1];
+c[1] = c[1] ^ c[0];
+out[1 + j] = c[1];
+return out; 
+}
+
+
+
+inline 
+fn firstordermult(reg ptr u32[8] st , reg ptr u32[8] ou, reg ptr u32[7] rnd , inline int i, inline int j, inline int o, inline int r) -> reg ptr u32[8], reg ptr u32[8] {
+reg u32[3] c;
+reg u32 random;
+
+c[0] = st[0 + j];
+c[1] = st[0 + i];
+c[0] = c[0] & c[1];
+random = rnd[r];
+c[0] = c[0] ^ random;
+
+c[2] = st[1 + j];
+
+c[2] = c[2] & c[1];
+c[0] = c[0] ^ c[2];
+
+ou[0 + o] = c[0];
+
+c[0] = st[1 + j];
+c[1] = st[1 + i];
+c[0] = c[0] & c[1];
+random = rnd[r];
+c[0] = c[0] ^ random;
+
+c[2] = st[0 + j];
+
+c[2] = c[2] & c[1];
+c[0] = c[0] ^ c[2];
+
+ou[1 + o] = c[0];
+
+return st, ou; 
+}
+
+inline 
+fn firstorderCalcA(reg ptr u32[8] state, reg ptr u32[8] out) -> reg ptr u32[8], reg ptr u32[8] {
+reg u32[2] tmp;
+
+tmp[0] = state[0]; 
+tmp[1] = state[1];
+
+out[4] = tmp[0];
+out[5] = tmp[1];
+
+
+inline int i, j, o;
+
+i = 0;
+j = 4;
+o = 0;
+
+
+state, out = firstorderadd(state, out, i, j, o);
+
+
+i = 2;
+o = 2; 
+out = firstorderaddone(out, i, o);
+
+i = 0; 
+j = 6;
+o = 6;
+
+state, out = firstorderadd(state, out, i, j, o);
+out = firstorderaddone(out, i, o);
+
+
+return state, out; 
+}
+
+inline 
+fn firstorderCalcB(reg ptr u32[8] state, reg ptr u32[8] out) -> reg ptr u32[8], reg ptr u32[8] {
+reg u32[2] tmp;
+
+tmp[0] = state[4]; 
+tmp[1] = state[5];
+
+out[4] = tmp[0];
+out[5] = tmp[1];
+
+
+inline int i, j, o;
+
+i = 0;
+j = 2;
+o = 0;
+
+
+state, out = firstorderadd(state, out, i, j, o);
+
+
+
+i = 2;
+j = 4; 
+o = 2; 
+
+state, out = firstorderadd(state, out, i, j, o);
+
+i = 2; 
+j = 6;
+o = 6;
+
+state, out = firstorderadd(state, out, i, j, o);
+
+out = firstorderaddone(out, 6, o);
+
+
+return state, out; 
+}
+
+
+
+inline 
+fn firstorderCalcG(reg ptr u32[8] state, reg ptr u32[8] out, reg ptr u32[7] rnd, inline int round) -> reg ptr u32[8], reg ptr u32[8] {
+
+reg u32[2] tmp;
+
+
+tmp[0] = state[2];
+tmp[1] = state[3];
+
+out[4] = tmp[0];
+out[5] = tmp[1];
+
+
+inline int i,j, o,r;
+i = 2;
+j = 6;
+o = 6;
+r = round + 0;
+
+state,out = firstordermult(state, out, rnd, i, j, o, r);
+
+i = 4;
+j = 6;
+
+state, out = firstorderadd2(state, out, i, j);
+
+i = 2;
+j = 4;
+o = 0;
+r = round + 1;
+
+state,out = firstordermult(state, out, rnd, i, j, o, r);
+
+i = 6;
+j = 0;
+
+out = firstorderadd3(out, i, j);
+
+
+i = 0;
+j = 6;
+o = 2;
+r = round + 2;
+
+state,out = firstordermult(state, out, rnd, i, j, o, r);
+
+i = 6;
+j = 2;
+
+out = firstorderadd3(out, i, j);
+
+
+return state, out; 
+}
+
+
+
+export 
+fn sbox(
+    #[ shares = { lo = 0, hi = 1, name = "a", t = 1 } ]
+    #[ shares = { lo = 2, hi = 3, name = "b", t = 1 } ]
+    #[ shares = { lo = 4, hi = 5, name = "c", t = 1 } ]
+    #[ shares = { lo = 6, hi = 7, name = "d", t = 1 } ]
+    reg ptr u32[8] state, 
+    #[ output = { lo = 0, hi = 7, name = "o", t = 2 } ]
+    reg ptr u32[8] out, 
+    #[ randomness = { n = 7 } ]
+    reg ptr u32[7] rnd ) -> reg ptr u32[8], reg ptr u32[8]{
+
+
+
+state, out = firstorderCalcA (state, out);
+
+
+inline int round;
+round = 0;
+
+state, out = firstorderCalcG(out, state, rnd, round);
+round = 3; 
+state, out = firstorderCalcG(state, out, rnd, round);
+
+state, out = firstorderCalcB (out, state);
+
+//a = firstorderCalcB(a, r);
+
+
+return state, out;
+}

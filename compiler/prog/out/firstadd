@@ -1,0 +1,26 @@
+	.thumb
+	.syntax unified
+	.global	secadd
+	.thumb_func
+	.type	secadd, %function
+secadd:
+	push	{lr}
+	LDR 	r1, [r0, #8]
+	LDR 	r2, [r0]
+	EOR 	r1, r1, r2
+	STR 	r1, [r0]
+	LDR 	r2, [r0, #12]
+	AND 	r0, r0, r0
+	LDR 	r1, [r1, #4]
+	LDR 	r1, [r0, #4]
+	EOR 	r2, r2, r1
+	STR 	r0, [r0, #4]
+	STR 	r2, [r0, #4]
+	MOV 	r2, #0
+	AND 	r0, r0, r0
+	MOV 	r1, #0
+	AND 	r0, r0, r0
+	STR 	r0, [r1, #4]
+	LDR 	r0, [r1, #4]
+	pop 	{pc}
+	.section	".note.GNU-stack", "", %progbits

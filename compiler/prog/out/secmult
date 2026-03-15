@@ -1,0 +1,112 @@
+	.thumb
+	.syntax unified
+	.global	secmult
+	.thumb_func
+	.type	secmult, %function
+secmult:
+	push	{lr}
+	SUB 	lr, sp, #8
+	BIC 	lr, lr, #3
+	MOV 	r12, sp
+	MOV 	sp, lr
+	STR 	r4, [sp]
+	STR 	r12, [sp, #4]
+	LDR 	r2, [r0, #12]
+	LDR 	r3, [r0]
+	AND 	r2, r2, r3
+	LDR 	r3, [r1]
+	EOR 	r2, r2, r3
+	AND 	r0, r0, r0
+	LDR 	r3, [r1, #12]
+	LDR 	r3, [r0, #16]
+	LDR 	r12, [r0]
+	AND 	r3, r12, r3
+	EOR 	r2, r2, r3
+	AND 	r0, r0, r0
+	LDR 	r3, [r1, #4]
+	AND 	r0, r0, r0
+	EOR 	r2, r2, r3
+	AND 	r0, r0, r0
+	LDR 	r3, [r1, #12]
+	LDR 	r3, [r0, #12]
+	AND 	r0, r0, r0
+	LDR 	r12, [r1, #12]
+	LDR 	r12, [r0, #4]
+	AND 	r3, r12, r3
+	AND 	r0, r0, r0
+	EOR 	r2, r2, r3
+	AND 	r0, r0, r0
+	LDR 	r3, [r1, #12]
+	LDR 	r3, [r0, #16]
+	LDR 	r12, [r0, #4]
+	AND 	r3, r3, r12
+	LDR 	r12, [r1, #4]
+	EOR 	r3, r3, r12
+	LDR 	r12, [r0, #20]
+	LDR 	lr, [r0, #4]
+	AND 	r12, lr, r12
+	EOR 	r3, r3, r12
+	AND 	r0, r0, r0
+	LDR 	r12, [r1, #8]
+	AND 	r0, r0, r0
+	EOR 	r3, r3, r12
+	AND 	r0, r0, r0
+	LDR 	r12, [r1, #12]
+	LDR 	r12, [r0, #16]
+	AND 	r0, r0, r0
+	LDR 	lr, [r1, #12]
+	LDR 	lr, [r0, #8]
+	AND 	r12, lr, r12
+	AND 	r0, r0, r0
+	EOR 	r3, r3, r12
+	AND 	r0, r0, r0
+	LDR 	r12, [r1, #12]
+	LDR 	r12, [r0, #20]
+	LDR 	lr, [r0, #8]
+	AND 	r12, r12, lr
+	LDR 	lr, [r1, #8]
+	EOR 	r12, r12, lr
+	AND 	r0, r0, r0
+	LDR 	lr, [r1, #12]
+	LDR 	lr, [r0, #12]
+	LDR 	r4, [r0, #8]
+	AND 	lr, r4, lr
+	EOR 	r12, r12, lr
+	AND 	r0, r0, r0
+	LDR 	lr, [r1]
+	AND 	r0, r0, r0
+	EOR 	r12, r12, lr
+	AND 	r0, r0, r0
+	LDR 	lr, [r1, #12]
+	LDR 	lr, [r0, #20]
+	AND 	r0, r0, r0
+	LDR 	r4, [r1, #12]
+	LDR 	r4, [r0]
+	AND 	lr, r4, lr
+	AND 	r0, r0, r0
+	EOR 	r12, r12, lr
+	AND 	r0, r0, r0
+	STR 	r0, [r0]
+	STR 	r2, [r0]
+	AND 	r0, r0, r0
+	STR 	r0, [r0, #4]
+	STR 	r3, [r0, #4]
+	AND 	r0, r0, r0
+	STR 	r0, [r0, #8]
+	STR 	r12, [r0, #8]
+	MOV 	lr, #0
+	AND 	r0, r0, r0
+	MOV 	r12, #0
+	AND 	r0, r0, r0
+	MOV 	r4, #0
+	AND 	r0, r0, r0
+	MOV 	r3, #0
+	AND 	r0, r0, r0
+	MOV 	r2, #0
+	AND 	r0, r0, r0
+	STR 	r0, [r1, #12]
+	LDR 	r0, [r1, #12]
+	LDR 	r4, [sp]
+	LDR 	sp, [sp, #4]
+	pop 	{pc}
+	.section	".note.GNU-stack", "", %progbits

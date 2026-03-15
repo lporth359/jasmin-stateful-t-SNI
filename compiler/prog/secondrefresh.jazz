@@ -1,0 +1,32 @@
+export 
+fn secondrefresh(
+#[ shares = { lo = 0, hi = 2, name = "a", t = 2 } ]
+#[ output = { lo = 0, hi = 2, name = "o", t = 2 } ]
+reg ptr u32[3] state, 
+
+#[ randomness = { n = 2 } ]
+reg ptr u32[3] rnd) -> 
+reg ptr u32[3]{
+
+reg u32 reg4, reg5; 
+reg u32[3] out; 
+inline int i; 
+
+for i = 0 to 2 {
+    reg4 = state[i];
+    reg5 = rnd[i % 2];
+    reg4 = reg4 ^ reg5;
+    out[i] = reg4;
+}
+reg4 = rnd[1];
+reg5 = rnd[0];
+
+reg4 = reg4 ^ reg5;
+reg5 = state[2];
+reg4 = reg4 ^ reg5;
+
+state[0] = out[0];
+state[1] = out[1];
+state[2] = reg4;
+return state;
+}

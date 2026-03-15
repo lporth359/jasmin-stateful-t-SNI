@@ -1,0 +1,36 @@
+
+export 
+fn secmult(
+#[ shares = { lo = 0, hi = 2, name = "a", t = 2 } ]
+#[ shares = { lo = 3, hi = 5, name = "b", t = 2 } ]
+#[ output = { lo = 0, hi = 2, name = "o", t = 2 } ]
+reg ptr u32[6] state, 
+
+#[ randomness = { n = 3 } ]
+reg ptr u32[3] rnd) -> reg ptr u32[6]{
+
+reg u32 reg4, reg5, reg6, reg7; 
+reg u32[3] out; 
+inline int i,j; 
+
+for i = 0 to 3 {
+    reg4 = state[i + 3];
+    reg5 = state[i];
+    reg4 = reg4 & reg5;
+
+    for j = 0 to 2 {
+        reg6 = rnd[(i+j)%3];
+        reg4 = reg4 ^ reg6; 
+        reg7 = state[((i + (j*2)  + 1 ) % 3) + 3];
+        reg5 = state[(i + j) % 3];
+        reg5 = reg5 & reg7; 
+        reg4 = reg4 ^ reg5;
+    }
+    out[i] = reg4;
+}
+state[0] = out[0];
+state[1] = out[1];
+state[2] = out[2];
+
+return state;
+}

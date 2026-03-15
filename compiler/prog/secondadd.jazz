@@ -1,0 +1,27 @@
+export 
+fn secadd(
+#[ shares = { lo = 0, hi = 2, name = "a", t = 2 } ]
+#[ shares = { lo = 3, hi = 5, name = "b", t = 2 } ]
+reg ptr u32[6] state, 
+#[ randomness = { n = 1 } ]
+reg ptr u32[1] rnd) -> reg ptr u32[6]{
+
+reg u32 reg4, reg5; 
+
+reg4 = state[3];
+reg5 = state[0];
+reg4 = reg4 ^ reg5;
+state[0] = reg4;
+
+reg5 = state[4];
+reg4 = state[2];
+reg5 = reg5 ^ reg4;
+state[1] = reg5;
+
+reg4 = state[5];
+reg5 = state[2];
+reg4 = reg4 ^ reg5;
+state[2] = reg4;
+
+return state;
+}

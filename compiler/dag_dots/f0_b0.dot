@@ -1,0 +1,237 @@
+digraph f0_b0 {
+  rankdir=LR;
+  node [shape=box, fontname="monospace"];
+  edge [fontname="monospace"];
+
+  n0 [label="0: Lopn\\nbarrier=false uses=1 defs=1\\nLopn [reg] <- Here!!!! [reg,reg]"];
+  n1 [label="1: Lopn\\nbarrier=false uses=1 defs=1\\nLopn [reg] <- Here!!!! [reg,reg]"];
+  n2 [label="2: Lopn\\nbarrier=false uses=1 defs=1\\nLopn [reg] <- Here!!!! [reg]"];
+  n3 [label="3: Lopn\\nbarrier=false uses=1 defs=1\\nLopn [reg] <- Here!!!! [reg]"];
+  n4 [label="4: Lopn\\nbarrier=false uses=0 defs=1\\nLopn [reg] <- Here!!!! [reg]"];
+  n5 [label="5: Lopn\\nbarrier=false uses=0 defs=1\\nLopn [reg] <- Here!!!! [reg]"];
+  n6 [label="6: Lopn\\nbarrier=true uses=2 defs=0\\nLopn [store[mem]] <- Here!!!! [reg]", style="filled", fillcolor="#eeeeee"];
+  n7 [label="7: Lopn\\nbarrier=true uses=2 defs=0\\nLopn [store[mem]] <- Here!!!! [reg]", style="filled", fillcolor="#eeeeee"];
+  n8 [label="8: Lopn\\nbarrier=true uses=2 defs=0\\nLopn [store[mem]] <- Here!!!! [reg]", style="filled", fillcolor="#eeeeee"];
+  n9 [label="9: Lopn\\nbarrier=true uses=2 defs=0\\nLopn [store[mem]] <- Here!!!! [reg]", style="filled", fillcolor="#eeeeee"];
+  n10 [label="10: Lopn\\nbarrier=true uses=1 defs=1\\nLopn [reg] <- Here!!!! [load[mem]]", style="filled", fillcolor="#eeeeee"];
+  n11 [label="11: Lopn\\nbarrier=true uses=1 defs=1\\nLopn [reg] <- Here!!!! [load[mem]]", style="filled", fillcolor="#eeeeee"];
+  n12 [label="12: Lopn\\nbarrier=false uses=2 defs=1\\nLopn [reg] <- Here!!!! [reg,reg]"];
+  n13 [label="13: Lopn\\nbarrier=true uses=2 defs=0\\nLopn [store[mem]] <- Here!!!! [reg]", style="filled", fillcolor="#eeeeee"];
+  n14 [label="14: Lopn\\nbarrier=true uses=1 defs=1\\nLopn [reg] <- Here!!!! [load[mem]]", style="filled", fillcolor="#eeeeee"];
+  n15 [label="15: Lopn\\nbarrier=true uses=1 defs=1\\nLopn [reg] <- Here!!!! [load[mem]]", style="filled", fillcolor="#eeeeee"];
+  n16 [label="16: Lopn\\nbarrier=false uses=2 defs=1\\nLopn [reg] <- Here!!!! [reg,reg]"];
+  n17 [label="17: Lopn\\nbarrier=true uses=2 defs=0\\nLopn [store[mem]] <- Here!!!! [reg]", style="filled", fillcolor="#eeeeee"];
+  n18 [label="18: Lopn\\nbarrier=true uses=1 defs=1\\nLopn [reg] <- Here!!!! [load[mem]]", style="filled", fillcolor="#eeeeee"];
+  n19 [label="19: Lopn\\nbarrier=true uses=1 defs=1\\nLopn [reg] <- Here!!!! [load[mem]]", style="filled", fillcolor="#eeeeee"];
+  n20 [label="20: Lopn\\nbarrier=false uses=1 defs=1\\nLopn [reg] <- Here!!!! [reg]"];
+
+  n0 -> n1 [label="RAW,WAW"];
+  n0 -> n3 [label="RAW,WAR"];
+  n0 -> n6 [label="BARRIER"];
+  n0 -> n7 [label="BARRIER"];
+  n0 -> n8 [label="BARRIER"];
+  n0 -> n9 [label="BARRIER"];
+  n0 -> n10 [label="BARRIER"];
+  n0 -> n11 [label="BARRIER"];
+  n0 -> n13 [label="BARRIER"];
+  n0 -> n14 [label="BARRIER"];
+  n0 -> n15 [label="BARRIER"];
+  n0 -> n17 [label="BARRIER"];
+  n0 -> n18 [label="BARRIER"];
+  n0 -> n19 [label="BARRIER"];
+  n0 -> n20 [label="WAR"];
+  n1 -> n3 [label="RAW"];
+  n1 -> n6 [label="BARRIER"];
+  n1 -> n7 [label="BARRIER"];
+  n1 -> n8 [label="BARRIER"];
+  n1 -> n9 [label="BARRIER"];
+  n1 -> n10 [label="BARRIER"];
+  n1 -> n11 [label="BARRIER"];
+  n1 -> n13 [label="BARRIER"];
+  n1 -> n14 [label="BARRIER"];
+  n1 -> n15 [label="BARRIER"];
+  n1 -> n17 [label="BARRIER"];
+  n1 -> n18 [label="BARRIER"];
+  n1 -> n19 [label="BARRIER"];
+  n2 -> n3 [label="WAR"];
+  n2 -> n6 [label="BARRIER"];
+  n2 -> n7 [label="BARRIER"];
+  n2 -> n8 [label="BARRIER"];
+  n2 -> n9 [label="BARRIER"];
+  n2 -> n10 [label="BARRIER"];
+  n2 -> n11 [label="BARRIER"];
+  n2 -> n13 [label="BARRIER"];
+  n2 -> n14 [label="BARRIER"];
+  n2 -> n15 [label="BARRIER"];
+  n2 -> n17 [label="BARRIER"];
+  n2 -> n18 [label="BARRIER"];
+  n2 -> n19 [label="BARRIER"];
+  n2 -> n20 [label="RAW,WAR"];
+  n3 -> n6 [label="BARRIER,RAW"];
+  n3 -> n7 [label="BARRIER,RAW"];
+  n3 -> n8 [label="BARRIER,RAW"];
+  n3 -> n9 [label="BARRIER,RAW"];
+  n3 -> n10 [label="BARRIER,RAW"];
+  n3 -> n11 [label="BARRIER,RAW"];
+  n3 -> n13 [label="BARRIER,RAW"];
+  n3 -> n14 [label="BARRIER,RAW"];
+  n3 -> n15 [label="BARRIER,RAW"];
+  n3 -> n17 [label="BARRIER,RAW"];
+  n3 -> n18 [label="BARRIER,RAW"];
+  n3 -> n19 [label="BARRIER,RAW"];
+  n3 -> n20 [label="WAW"];
+  n4 -> n6 [label="BARRIER,RAW"];
+  n4 -> n7 [label="BARRIER"];
+  n4 -> n8 [label="BARRIER,RAW"];
+  n4 -> n9 [label="BARRIER"];
+  n4 -> n10 [label="BARRIER,WAW"];
+  n4 -> n11 [label="BARRIER"];
+  n4 -> n12 [label="RAW,WAW"];
+  n4 -> n13 [label="BARRIER,RAW"];
+  n4 -> n14 [label="BARRIER"];
+  n4 -> n15 [label="BARRIER,WAW"];
+  n4 -> n16 [label="RAW"];
+  n4 -> n17 [label="BARRIER"];
+  n4 -> n18 [label="BARRIER,WAW"];
+  n4 -> n19 [label="BARRIER"];
+  n5 -> n6 [label="BARRIER"];
+  n5 -> n7 [label="BARRIER,RAW"];
+  n5 -> n8 [label="BARRIER"];
+  n5 -> n9 [label="BARRIER,RAW"];
+  n5 -> n10 [label="BARRIER"];
+  n5 -> n11 [label="BARRIER,WAW"];
+  n5 -> n12 [label="RAW"];
+  n5 -> n13 [label="BARRIER"];
+  n5 -> n14 [label="BARRIER,WAW"];
+  n5 -> n15 [label="BARRIER"];
+  n5 -> n16 [label="RAW,WAW"];
+  n5 -> n17 [label="BARRIER,RAW"];
+  n5 -> n18 [label="BARRIER"];
+  n5 -> n19 [label="BARRIER,WAW"];
+  n6 -> n7 [label="BARRIER"];
+  n6 -> n8 [label="BARRIER"];
+  n6 -> n9 [label="BARRIER"];
+  n6 -> n10 [label="BARRIER,WAR"];
+  n6 -> n11 [label="BARRIER"];
+  n6 -> n12 [label="BARRIER,WAR"];
+  n6 -> n13 [label="BARRIER"];
+  n6 -> n14 [label="BARRIER"];
+  n6 -> n15 [label="BARRIER,WAR"];
+  n6 -> n16 [label="BARRIER"];
+  n6 -> n17 [label="BARRIER"];
+  n6 -> n18 [label="BARRIER,WAR"];
+  n6 -> n19 [label="BARRIER"];
+  n6 -> n20 [label="BARRIER,WAR"];
+  n7 -> n8 [label="BARRIER"];
+  n7 -> n9 [label="BARRIER"];
+  n7 -> n10 [label="BARRIER"];
+  n7 -> n11 [label="BARRIER,WAR"];
+  n7 -> n12 [label="BARRIER"];
+  n7 -> n13 [label="BARRIER"];
+  n7 -> n14 [label="BARRIER,WAR"];
+  n7 -> n15 [label="BARRIER"];
+  n7 -> n16 [label="BARRIER,WAR"];
+  n7 -> n17 [label="BARRIER"];
+  n7 -> n18 [label="BARRIER"];
+  n7 -> n19 [label="BARRIER,WAR"];
+  n7 -> n20 [label="BARRIER,WAR"];
+  n8 -> n9 [label="BARRIER"];
+  n8 -> n10 [label="BARRIER,WAR"];
+  n8 -> n11 [label="BARRIER"];
+  n8 -> n12 [label="BARRIER,WAR"];
+  n8 -> n13 [label="BARRIER"];
+  n8 -> n14 [label="BARRIER"];
+  n8 -> n15 [label="BARRIER,WAR"];
+  n8 -> n16 [label="BARRIER"];
+  n8 -> n17 [label="BARRIER"];
+  n8 -> n18 [label="BARRIER,WAR"];
+  n8 -> n19 [label="BARRIER"];
+  n8 -> n20 [label="BARRIER,WAR"];
+  n9 -> n10 [label="BARRIER"];
+  n9 -> n11 [label="BARRIER,WAR"];
+  n9 -> n12 [label="BARRIER"];
+  n9 -> n13 [label="BARRIER"];
+  n9 -> n14 [label="BARRIER,WAR"];
+  n9 -> n15 [label="BARRIER"];
+  n9 -> n16 [label="BARRIER,WAR"];
+  n9 -> n17 [label="BARRIER"];
+  n9 -> n18 [label="BARRIER"];
+  n9 -> n19 [label="BARRIER,WAR"];
+  n9 -> n20 [label="BARRIER,WAR"];
+  n10 -> n11 [label="BARRIER"];
+  n10 -> n12 [label="BARRIER,RAW,WAW"];
+  n10 -> n13 [label="BARRIER,RAW"];
+  n10 -> n14 [label="BARRIER"];
+  n10 -> n15 [label="BARRIER,WAW"];
+  n10 -> n16 [label="BARRIER,RAW"];
+  n10 -> n17 [label="BARRIER"];
+  n10 -> n18 [label="BARRIER,WAW"];
+  n10 -> n19 [label="BARRIER"];
+  n10 -> n20 [label="BARRIER,WAR"];
+  n11 -> n12 [label="BARRIER,RAW"];
+  n11 -> n13 [label="BARRIER"];
+  n11 -> n14 [label="BARRIER,WAW"];
+  n11 -> n15 [label="BARRIER"];
+  n11 -> n16 [label="BARRIER,RAW,WAW"];
+  n11 -> n17 [label="BARRIER,RAW"];
+  n11 -> n18 [label="BARRIER"];
+  n11 -> n19 [label="BARRIER,WAW"];
+  n11 -> n20 [label="BARRIER,WAR"];
+  n12 -> n13 [label="BARRIER,RAW"];
+  n12 -> n14 [label="BARRIER,WAR"];
+  n12 -> n15 [label="BARRIER,WAR,WAW"];
+  n12 -> n16 [label="RAW,WAR"];
+  n12 -> n17 [label="BARRIER"];
+  n12 -> n18 [label="BARRIER,WAR,WAW"];
+  n12 -> n19 [label="BARRIER,WAR"];
+  n13 -> n14 [label="BARRIER"];
+  n13 -> n15 [label="BARRIER,WAR"];
+  n13 -> n16 [label="BARRIER"];
+  n13 -> n17 [label="BARRIER"];
+  n13 -> n18 [label="BARRIER,WAR"];
+  n13 -> n19 [label="BARRIER"];
+  n13 -> n20 [label="BARRIER,WAR"];
+  n14 -> n15 [label="BARRIER"];
+  n14 -> n16 [label="BARRIER,RAW,WAW"];
+  n14 -> n17 [label="BARRIER,RAW"];
+  n14 -> n18 [label="BARRIER"];
+  n14 -> n19 [label="BARRIER,WAW"];
+  n14 -> n20 [label="BARRIER,WAR"];
+  n15 -> n16 [label="BARRIER,RAW"];
+  n15 -> n17 [label="BARRIER"];
+  n15 -> n18 [label="BARRIER,WAW"];
+  n15 -> n19 [label="BARRIER"];
+  n15 -> n20 [label="BARRIER,WAR"];
+  n16 -> n17 [label="BARRIER,RAW"];
+  n16 -> n18 [label="BARRIER,WAR"];
+  n16 -> n19 [label="BARRIER,WAR,WAW"];
+  n17 -> n18 [label="BARRIER"];
+  n17 -> n19 [label="BARRIER,WAR"];
+  n17 -> n20 [label="BARRIER,WAR"];
+  n18 -> n19 [label="BARRIER"];
+  n18 -> n20 [label="BARRIER,WAR"];
+  n19 -> n20 [label="BARRIER,WAR"];
+
+  // indegrees:
+  // n0 indeg=0
+  // n1 indeg=1
+  // n2 indeg=0
+  // n3 indeg=3
+  // n4 indeg=0
+  // n5 indeg=0
+  // n6 indeg=6
+  // n7 indeg=7
+  // n8 indeg=8
+  // n9 indeg=9
+  // n10 indeg=10
+  // n11 indeg=11
+  // n12 indeg=8
+  // n13 indeg=13
+  // n14 indeg=14
+  // n15 indeg=15
+  // n16 indeg=12
+  // n17 indeg=17
+  // n18 indeg=18
+  // n19 indeg=19
+  // n20 indeg=15
+}

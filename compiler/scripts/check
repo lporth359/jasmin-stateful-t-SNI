@@ -1,0 +1,42 @@
+#!/usr/bin/env bash
+
+set -e
+
+ARCH=$2
+TEST_FILE=${@: -1}
+ROOT_DIR=tests/results/check-${ARCH}
+# Concatenate all args (except test file name - last arg)
+ARGS_CAT=args-$(
+	IFS=""
+	echo "${*:1:$#-1}"
+)
+DIR=$ROOT_DIR/${TEST_FILE%.jazz}/$ARGS_CAT
+ASM=${DIR}/jasmin.s
+OBJ=${DIR}/jasmin.o
+DLL=${DIR}/jasmin.so
+
+if [ -d "${DIR}" ]; then rm -r ${DIR}; fi
+mkdir -p $DIR
+
+set -x
+
+$(dirname $0)/../jasminc -g -o ${ASM} "$@"
+# Negative test cases should have failed by now
+# Succeed early if it’s not the case (i.e., do not try to assemble the result)
+(echo $@ | grep -q fail) && exit 0
+
+if [ $ARCH = "arm-m4" ]
+then
+    ASARGS="--triple=armv7m --mcpu=cortex-m4"
+elif [ $ARCH = "riscv" ]
+then
+     # +m enables integer multiplication
+     ASARGS="--triple=riscv32 --mcpu=generic-rv32 -mattr=+m"
+else
+    ASARGS="--triple=x86_64"
+fi
+
+llvm-mc $ASARGS --filetype=obj -o ${OBJ} ${ASM}
+
+# Compile as a shared library, except for ARMv7 for which it is known not to work
+[ $ARCH = "arm-m4" ] || ld.lld -shared -o ${DLL} ${OBJ}

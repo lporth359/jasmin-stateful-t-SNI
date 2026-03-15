@@ -1,0 +1,42 @@
+	.thumb
+	.syntax unified
+	.global	secondrefresh
+	.thumb_func
+	.type	secondrefresh, %function
+secondrefresh:
+	push	{lr}
+	LDR 	r2, [r0]
+	LDR 	r3, [r1, #8]
+	LDR 	r3, [r1]
+	EOR 	r2, r2, r3
+	AND 	r0, r0, r0
+	LDR 	r3, [r1, #8]
+	LDR 	r3, [r0, #4]
+	LDR 	r12, [r1, #4]
+	EOR 	r3, r3, r12
+	LDR 	r12, [r1, #4]
+	LDR 	r1, [r1]
+	EOR 	r12, r12, r1
+	LDR 	r1, [r0, #8]
+	EOR 	r12, r12, r1
+	AND 	r0, r0, r0
+	STR 	r0, [r0]
+	STR 	r2, [r0]
+	AND 	r0, r0, r0
+	STR 	r0, [r0, #4]
+	STR 	r3, [r0, #4]
+	AND 	r0, r0, r0
+	STR 	r0, [r0, #8]
+	STR 	r12, [r0, #8]
+	MOV 	r12, #0
+	AND 	r0, r0, r0
+	MOV 	r3, #0
+	AND 	r0, r0, r0
+	MOV 	r2, #0
+	AND 	r0, r0, r0
+	MOV 	r1, #0
+	AND 	r0, r0, r0
+	STR 	r0, [r1, #8]
+	LDR 	r0, [r1, #8]
+	pop 	{pc}
+	.section	".note.GNU-stack", "", %progbits

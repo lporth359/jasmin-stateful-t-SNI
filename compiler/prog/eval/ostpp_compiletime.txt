@@ -1,0 +1,24 @@
+warning: support of the ARMv7 architecture is experimental
+"prog/firstadd.jazz", line 7 (15-18)
+warning: unused variable rnd.176
+0:00.02 real, 0.01 user, 0.00 sys
+warning: support of the ARMv7 architecture is experimental
+"prog/secondadd.jazz", line 7 (15-18)
+warning: unused variable rnd.176
+0:00.02 real, 0.01 user, 0.00 sys
+warning: support of the ARMv7 architecture is experimental
+0:00.02 real, 0.01 user, 0.00 sys
+warning: support of the ARMv7 architecture is experimental
+0:00.06 real, 0.05 user, 0.00 sys
+warning: support of the ARMv7 architecture is experimental
+0:00.01 real, 0.00 user, 0.00 sys
+warning: support of the ARMv7 architecture is experimental
+0:00.02 real, 0.01 user, 0.00 sys
+warning: support of the ARMv7 architecture is experimental
+0:00.07 real, 0.06 user, 0.01 sys
+warning: support of the ARMv7 architecture is experimental
+"prog/secondpresentsbox.jazz", line 165 (11-12)
+warning: unused variable c.287
+"prog/secondpresentsbox.jazz", line 166 (8-14)
+warning: unused variable random.288
+0:02.51 real, 2.50 user, 0.00 sys
