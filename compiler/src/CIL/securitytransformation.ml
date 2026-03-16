@@ -22,56 +22,15 @@ let debug_security_pass : bool = false
 let dbg (s : string) : unit =
   if debug_security_pass then (Printf.eprintf "[SecurityPass] %s\n%!" s) else ()
 
-(* -------------------------------------------------------------------------- *)
-(* Error helpers                                                              *)
-(* -------------------------------------------------------------------------- *)
 
-let pp_internal (where_ : string) (msg : string) : pp_error_loc =
-  pp_internal_error_s where_ msg
 
-let error (where_ : string) (msg : string) : 'a cexec =
-  Error (pp_internal where_ msg)
-
-(* --- small helpers for errors and Coq-Z ops --- *)
-
-let pass_name = "securitytransformationpass"
-
-let err (msg : string) : 'a cexec =
-  Error (pp_internal_error_s pass_name msg)
-
-let z_lt (a : coq_Z) (b : coq_Z) : bool =
-  match Z.compare a b with
-  | Lt -> true
-  | _  -> false
 
 let rec coqZ_of_int (n : int) : coq_Z =
   if n <= 0 then Z0
   else Z.add (Zpos Coq_xH) (coqZ_of_int (n - 1))
 
-let z4 : coq_Z = Zpos (Coq_xO (Coq_xO Coq_xH))
-
-
-(* --- config --- *)
-let debug_input_share_map = true
-
-
-type pass_cfg = {
-  share_count  : int;
-  share_stride : coq_Z;  (* bytes *)
-}
-
-let default_cfg : pass_cfg = {
-  share_count  = 2;
-  share_stride = z4;
-}
 
 type reg_id = var_i
-
-(*extracts the register name of variable*)
-let reg_of_lval (lv : lval) : reg_id option =
-  match lv with
-  | Lvar v -> Some v
-  | _ -> None
 
 
 
@@ -146,8 +105,6 @@ let string_of_sopn_kind = function
 
 
 
-
-(*body*)  
 let debug_probe_body (body : 'asm_op instr list) =
   if not debug_probe_copn then () else
   List.iter (fun i ->
@@ -276,13 +233,6 @@ let offset_of_load_ins (e : pexpr) : coq_Z option =
   | _ -> None
 
 
-(************************************************************************************)
-(************************************************************************************)
-(************************************************************************************)
-(* ========================================================================= *)
-(*  Security analysis base structure: per-instruction deps + state + leakage  *)
-(* ========================================================================= *)
-
 (* ---------- Helpers for coq_Z comparisons (Map/Set need int comparison) --- *)
 let z_cmp (a : coq_Z) (b : coq_Z) : int =
   match Z.compare a b with
@@ -290,13 +240,6 @@ let z_cmp (a : coq_Z) (b : coq_Z) : int =
   | Eq -> 0
   | Gt -> 1
 
-
-
-(*-------------------------------------------------------------------------------------------------------------------------------------*)
-(*-------------------------------------------------------------------------------------------------------------------------------------*)
-(*---------------------------Below everything new--------------------------------------------------------------------------------------*)
-(*-------------------------------------------------------------------------------------------------------------------------------------*)
-(*-------------------------------------------------------------------------------------------------------------------------------------*)
 
 let rec peel2 (e : pexpr) : pexpr =
   match e with
@@ -311,10 +254,6 @@ let rec offset_of_addr_expr2 (e : pexpr) : (var_i * coq_Z * wsize) option =
       | _ -> None
       end
     | _ -> None
-
-(*| Papp2 (_, firstexpr, secondexpr) -> let () = match (firstexpr, secondexpr) with
-      | ((Pvar x) , (Papp1 (_, (Pconst (Z0)) )))  -> print_string(x.gv.v_var.vname.v_name);  print_string (" is (Pvar, Papp1) ")
-      (offset_of_addr_expr2 addr)*)  
 
 let offset_of_load_ins2 (e : pexpr) : (var_i * coq_Z * wsize) option =
   match e with
@@ -349,10 +288,6 @@ let offset_of_load_ins2 (e : pexpr) : (var_i * coq_Z * wsize) option =
   | _ -> None
 
 
-(*Below new Regmap and Memory map*)
-
-
-(*Below new Shareset and dep*)
 
 let is_sp_of (sp : var_i) (x : gvar) : bool =
   Stdlib.compare x.gv sp = 0
@@ -386,7 +321,7 @@ type rmap = Expr.rmap
 
 type share_map2 = smap  (* key: stack offset *)
 
-(*Maps and structs end*)
+
 
 
 type share_id3 = share_info2
@@ -414,8 +349,6 @@ type masking2 = IntSet.t
 type dep2_m = 
   | Base of dep2 * masking2
   | Val of dep2_m * masking2
-
-
 
 
 (* Compare two lists lexicographically using an element comparator *)
@@ -464,8 +397,6 @@ let dep2_union_with_masking (a:dep2) (b:dep2) (ma : masking2) (mb : masking2) : 
   else ShareSet2.union a b
   
 
-(*Above new Shareset and dep*)
-
 
 type reg2_key = var_i
 
@@ -483,13 +414,6 @@ module RegMap2 = Map.Make(Reg2KeyOrd)
 
 type reg2_deps = dep2 RegMap2.t
 type reg2_masking = masking2 RegMap2.t
-
-
-let reg2_key_of_var_i (v : var_i) : reg2_key =
-  (* v : { v_var; v_info }  and v_var has v_name : Ident.ident *)
-  v
-
-
 
 
 module OfsMap2 = Map.Make(struct
@@ -528,9 +452,7 @@ type scrubvalue =
 type scrubbing = scrubvalue list
 
 
-(*type countermeasures = scrubbing * clearing
-
-let countermeasures_empty = ([],[])*)
+(*type countermeasures is used to tag an instruction for insertion of countermeasures*)
 
 type countermeasures = {
   clearOPA : bool;
@@ -540,6 +462,7 @@ type countermeasures = {
   scrub : scrubvalue
 }
 
+(*counter measure empty is tagged to an instruction, if no clearing is needed*)
 let countermeasures_empty = {
   clearOPA = false;
   clearOPB = false;
@@ -559,7 +482,7 @@ type share =
   | None
   | Some of share_id3
 
-
+(*Datatype to build up observations as graph*)
 
 module rec Obs : sig
   type t =
@@ -596,16 +519,16 @@ type rleak = {
 }
 
 let observation_empty : observation = None
-  
+
+  (*helper functions for xor of observation represented as graphs*)
   let xor_list a b = 
     ObsSet.diff (ObsSet.union a b) (ObsSet.inter a b)
   let xor_element_list a b = 
     xor_list (ObsSet.singleton a) b
   let xor_elements a b  =
     xor_list (ObsSet.singleton a) (ObsSet.singleton b)
-
     
-
+  (*Xor of to observation represented as grapg*)
   let xor (a : observation) (b: observation) : observation = match (a,b) with 
 
    | ((Xor (a,x)), (Xor (b,y))) -> Xor (xor_list a b , masking2_union x y)
@@ -621,9 +544,9 @@ let observation_empty : observation = None
    | ((Share(a,x)), (Share (b,y))) -> Xor (xor_elements (Share (a, masking2_empty)) (Share (b, masking2_empty)) , masking2_union x y)
    | ((Share(None,x)), (And (b,y))) -> And (b, masking2_union x y)
    | ((Share(a,x)), (And (b,y))) -> Xor (xor_elements (Share (a, masking2_empty)) (And (b, masking2_empty)) , masking2_union x y)
-
    | (_,_) -> None  
 
+   (*And of to observation represented as grapg*)
   let o_and (a : observation) (b: observation) : observation= match (a,b) with 
 
    | ((Obs _), (_)) -> None
@@ -633,58 +556,12 @@ let observation_empty : observation = None
    | (_, And (sb,mb)) -> And (ObsSet.add a sb, mb)
    | (_,_) -> And (ObsSet.union (ObsSet.singleton a) (ObsSet.singleton b) , masking2_empty)   
 
-   let share_equal (a: share) (b:share)  = match (a,b) with
-    |(None, None) -> true
-    |(Some x, Some y) ->  let a = (x = y) in a
-    | _ -> false
-
-   let rec obs_equal (a : observation) (b: observation) : bool = match (a,b) with
-    | (Share (a,x)), (Share (b,y)) -> (share_equal a b) && (IntSet.equal x y)
-    | (Xor (a,x)), (Xor (b,y)) 
-    | (And (a,x)), (And (b,y))
-    | (Obs (a,x)), (Obs (b,y)) -> (list_obs_equal a b) && (IntSet.equal x y)
-    | (_ , _ ) -> false
-    and list_obs_equal la lb = 
-      ObsSet.equal la lb
-
-   let obs_get_mask (obs: observation)  = match obs with
-    | Share (_, m) -> m
-    | Xor (_, m)
-    | And (_, m)
-    | Obs (_, m) -> m 
-    | None -> masking2_empty
-
-  let obs_set_mask (obs: observation) m : observation = match obs with
-    | Share (x, _) -> Share (x, m)
-    | Xor (x, _) -> Xor (x , m)
-    | And (x, _) -> And (x , m)
-    | Obs (x, _) -> Obs (x , m)
-    | None -> None
-   
-   let obs_masking_union (obs : ObsSet.t) : masking2 = 
-      ObsSet.fold (fun o acc -> IntSet.union (obs_get_mask o) acc  ) obs masking2_empty 
-
-  let obs_dep_stop_ob (o: observation) = match o with
-    | None -> true 
-    | Share (_,y)  -> true
-    | Xor (_,y) 
-    | And (_,y) 
-    | Obs (_,y)  -> if (IntSet.cardinal y > 0) then true else false
-    
-  let obs_eliminate_stop (obs: ObsSet.t) = 
-    ObsSet.fold (fun o acc -> acc && obs_dep_stop_ob o) obs true
-  
-  let obs_dep_union_match (o: observation) = match o with
-    | Share (Some x,y) -> if (IntSet.cardinal y > 0 ) then dep2_empty else ShareSet2.singleton x
-    | _ -> dep2_empty 
-  let obs_dep_union (obs : ObsSet.t) acc = 
-    ObsSet.fold (fun o acc -> ShareSet2.union acc (obs_dep_union_match o)) obs acc
-
   type dep = {
   shares : ShareSet2.t;
   masks  : IntSet.t;
   }
 
+  (*debug printing for observation type*)
   let print_dep_s d s = 
   ShareSet2.fold (fun (name, idx) acc ->
     Printf.sprintf "%s, %s%i " acc name idx;
@@ -744,6 +621,7 @@ let observation_empty : observation = None
   let print_obs (o: observation) = 
     Printf.printf "%s" (print_obs_s o)
 
+  (*sis1 collects information used to calculate an observation to localy check if a observation is secure*)
   let rec sis1 (o:observation) =
   match o with
   | None ->
@@ -833,78 +711,23 @@ let observation_empty : observation = None
         set
         []
 
-  let eliminate_masks (monos : monomial list) : monomial list =
-  let rec step (acc : monomial list) (remaining : monomial list) : monomial list =
-    match remaining with
-    | [] -> acc
-
-    | (m : monomial) :: (rest : monomial list) ->
-
-        match (IntSet.choose_opt m.masks : IntSet.elt option) with
-        | None ->
-            step (m :: acc) rest
-
-        | Some (r : IntSet.elt) ->
-
-            let rec find (lst : monomial list)
-              : (monomial * monomial list) option =
-              match lst with
-              | [] -> None
-
-              | (x : monomial) :: (xs : monomial list) ->
-                  if IntSet.mem r x.masks then
-                    Some (x, xs)
-                  else
-                    match find xs with
-                    | None -> None
-                    | Some (y, ys) -> Some (y, x :: ys)
-            in
-
-            match find rest with
-            | None ->
-                step (m :: acc) rest
-
-            | Some ((m2 : monomial), (others : monomial list)) ->
-
-                let new_m : monomial =
-                  {
-                    shares =
-                      ShareSet2.union
-                        (ShareSet2.diff m.shares m2.shares)
-                        (ShareSet2.diff m2.shares m.shares);
-
-                    masks =
-                      IntSet.union
-                        (IntSet.diff m.masks m2.masks)
-                        (IntSet.diff m2.masks m.masks);
-                  }
-                in
-
-                step acc (new_m :: others)
-  in
-
-  step [] monos
-
-
-
   module IntMap = Map.Make(Stdlib.Int)
   module ObsSetKey = struct
   type t = ObsSet.t
   let compare = ObsSet.compare
   end
-  module ObsSetMap = Map.Make(ObsSetKey)
-
-     
-  (*let rec obs_diff_masking (obs : ObsSet.t) (robs : ObsSet.t) = match obs, robs with 
-    | [], [] -> []
-    | None :: rst1, None :: rst2  -> obs_diff_masking rst1 rst2
-    | Share (x, a) :: rst1, Share (y, b) :: rst2  -> Share(x, IntSet.diff a b) :: obs_diff_masking rst1 rst2
-    | Xor (x, a) :: rst1, Xor (y, b) :: rst2  -> Xor(x, IntSet.diff a b) :: obs_diff_masking rst1 rst2
-    | And (x, a) :: rst1, And (y, b) :: rst2  -> And(x, IntSet.diff a b) :: obs_diff_masking rst1 rst2
-    | Obs (x, a) :: rst1, Obs (y, b) :: rst2  -> Obs(x, IntSet.diff a b) :: obs_diff_masking rst1 rst2
-    | _ , _ -> [] *)  
+  module ObsSetMap = Map.Make(ObsSetKey) 
   
-    let rec eliminate_masking_build_obs (obs: observation list) mi mb mmap = match obs,mi,mb with
+  (*Helper functions for eliminate masking*)
+  let obs_dep_stop_ob (o: observation) = match o with
+    | None -> true 
+    | Share (_,y)  -> true
+    | Xor (_,y) 
+    | And (_,y) 
+    | Obs (_,y)  -> if (IntSet.cardinal y > 0) then true else false
+  let stop (obs: ObsSet.t) = 
+    ObsSet.fold (fun o acc -> acc && obs_dep_stop_ob o) obs true
+  let rec eliminate_masking_build_obs (obs: observation list) mi mb mmap = match obs,mi,mb with
      | [],[], mb -> ObsSet.empty
      | fo :: orest , mf :: mrest , fb :: brest -> begin  match fo with 
         | Share (x,m) -> let sh = ObsSetMap.fold (fun k v acc -> begin
@@ -1002,18 +825,18 @@ let observation_empty : observation = None
           
            ) obs (ein,din)
 
+  (*eliminate maskings peels of maskings that are used by multiple obseravtion*)
   let rec eliminate_masking (obs: observation) : observation =
     match obs with 
     | Obs(x, m) -> 
       let (d, e) =  prepare_elimination x ObsSet.empty ObsSet.empty in 
-      (*print_endline (Printf.sprintf "Size of D = %i and Size of E = %i" (ObsSet.cardinal d) (ObsSet.cardinal e) );*)
       let e' = eliminate e in 
       let obs' = ObsSet.union d e' in 
-      (*print_endline (Printf.sprintf "Observation after elimination:\n %s End after elimination" (print_obs_s (Obs (obs', masking2_empty))) );*)
-      if obs_eliminate_stop obs' then (Obs (obs', masking2_empty)) 
+      if stop obs' then (Obs (obs', masking2_empty)) 
       else eliminate_masking (Obs (obs', masking2_empty)) 
     | _ -> None  
 
+  (*collects shares collects shares needed to simulate observation*)
   let collect_shares (obs:observation) : dep2 = 
     match obs with 
       | Obs (x,_) -> ObsSet.fold (fun o acc -> match o with 
@@ -1022,6 +845,7 @@ let observation_empty : observation = None
       ) x dep2_empty
       | _ -> dep2_empty
 
+  (*function sis that calculates the shares needed for simulation of one or multiple observation*)
   let sis obs = 
     let obs' = eliminate_masking obs in
     collect_shares obs'                     
@@ -1116,6 +940,8 @@ let state2_empty : proc2_state =
     opAM = masking2_empty; opBM = masking2_empty; opRM = masking2_empty; opWM = masking2_empty;
     opAO = observation_empty; opBO = observation_empty; opRO = observation_empty; opWO = observation_empty; }
 
+
+(*enviroment state used to build up state and leakages accross instruction*)    
 type env2 = {
   rdep : reg2_deps;
   mdep : mem2_deps;
@@ -1134,14 +960,9 @@ type env2 = {
 
 
 
-
-
-
-
-
 module Securitytransformation (Arch: Arch_full.Arch) = struct
 
-
+(*Debug functions*)
 
 let debug_rdep = false
 let debug_mdep = false
@@ -1206,11 +1027,6 @@ let print_countermeasurres (cm : countermeasures array) =
       print_countermeasure cm
     done 
 
-
-
-
-
-
 let print_dep d = 
   ShareSet2.iter (fun (name, idx) ->
     print_string(name); print_int(idx); print_string(", ");
@@ -1218,102 +1034,7 @@ let print_dep d =
 let print_masking m =
   IntSet.iter (fun i ->
     print_int i; print_string " ") m  
-let print_env (e:env2) = 
-  print_endline("*****************************Start*print_env**************************************");
 
-  
-  let () = 
-  if debug_rdep then begin 
-  RegMap2.iter (fun (r)(d : dep2) ->
-    print_string("---print_env--- key:");
-    print_string(r.v_var.vname.v_name); 
-    print_string("--- dep set: {");
-    print_dep d; 
-    print_endline("}");
-    
-  ) e.rdep;
-  end else () in 
-  
-  
-  
-  let () = 
-  if debug_mdep then begin 
-  ShareMap.iter (fun (r,i)(d : dep2) ->
-    print_string("---print_env--- key:");
-    print_string(r.v_var.vname.v_name);
-    print_string(" ");
-    print_int(i); 
-    print_string("--- dep set: {");
-    print_dep d; 
-    print_endline("}");
-    
-  ) e.mdep;
-  end else () in 
-  let () = 
-  if debug_memmasking then begin 
-  ShareMap.iter (fun (k,i) v -> 
-    
-    print_string ("Memory value: "); 
-    print_string(k.v_var.vname.v_name); 
-    print_string (" "); 
-    print_int(i); 
-    print_string(" has masking: {"); 
-    
-      IntSet.iter(fun inte -> 
-        print_int(inte); 
-        print_string(", ")
-      ) v; 
-      print_string("}");
-    print_endline("}");
-  ) e.memmasking;
-
-      end else () in
-      let () = 
-      if debug_regmasking then begin 
-    RegMap2.iter (fun (k) v -> 
-    
-    print_string ("Register value: "); 
-    print_string(k.v_var.vname.v_name); 
-    print_string (" "); 
-    print_string(" has masking: {"); 
-      IntSet.iter(fun inte -> 
-        print_int(inte); 
-        print_string(", ")
-    ) v;
-    print_endline("}");
-  ) e.regmasking;
-
-      end else () in
-      
-    let () = 
-  if debug_state then begin 
-  print_string("opA: {"); 
-  print_dep e.st.opA;
-  print_endline "}"; 
-  print_string("opB: {");
-  print_dep e.st.opB;
-  print_endline "}";
-  print_string("opR: {");
-  print_dep e.st.opR;
-  print_endline "}";
-  print_string("opW: {");
-  print_dep e.st.opW;
-  print_endline "}";
-  end else () in 
-
-    let () = 
-  if debug_regrnd then begin 
-  RegMap2.iter(fun k v -> 
-    print_string("---init rmap: "); 
-    print_string(k.v_var.vname.v_name);
-    print_string (" "); 
-    print_int(v);  
-    print_endline("---------------------------------------------------------------------------------------------"); ) e.regrnd
-  end else () in 
-  print_endline("*******************************End*print_env**************************************");
-  print_endline("")
-
-  
 let env_empty : env2 = {  rdep = RegMap2.empty; 
                           mdep = ShareMap.empty; 
                           robs = RegMap2.empty; 
@@ -1327,10 +1048,10 @@ let env_empty : env2 = {  rdep = RegMap2.empty;
                           srleak = RleakSet.empty;
                           rleak = RleakSet.empty}
 
-(*Helper functions getter and setter below*)
+(*Helper functions getter and setter to load and store enviroment variable*)
 
 let get_reg2 (e:env2) (r:var_i) : dep2 =
-  let k = reg2_key_of_var_i r in
+  let k = r in
   match RegMap2.find_opt k e.rdep with Some d -> d | None -> dep2_empty
 
 let get_si2 (e:env2) ((var_i, ofs):skey) : bool =
@@ -1383,9 +1104,6 @@ let get_mem2_masking (e:env2) (k,i) : masking2 =
 let set_mem2_masking (e:env2) (k,i) (d:masking2) : env2 =
   { e with memmasking = ShareMap.add (k,i) d e.memmasking } 
 
-
-
-
 let add_rleak (e:env2) (pos : int) (o:observation) (cm : cm) (op: bool) : env2 =
 
   let rm = e.rleak in 
@@ -1408,8 +1126,6 @@ let add_rleak (e:env2) (pos : int) (o:observation) (cm : cm) (op: bool) : env2 =
 
 let add_rleak_output omap (e:env2)  =
   let rm = e.rleak in 
-
-
   let rm =  Expr.ShareMap.fold (fun skey si rm ->
         let o = get_mem2_obs e skey in 
         let (rleak :rleak) = {pos = max_int; cm = None; obs = o;  op = true} in 
@@ -1435,11 +1151,6 @@ let init2_env_from_input_smap_rmap (smap : smap) (rmap : rmap) : env2 =
         ShareMap.add key si acc
     ) rmap ShareMap.empty
   in
-  (*let init_rleak  =
-    Expr.RandomnessMap.fold (fun key si acc ->
-        IntMap.add si rleakset_empty acc 
-    ) rmap IntMap.empty
-  in*)
   let mem_masking  =
     Expr.RandomnessMap.fold (fun key si acc ->
         ShareMap.add key (IntSet.singleton si) acc
@@ -1520,13 +1231,11 @@ let has_conflicting_share_indices_t (dep : dep2) (t :int) : bool =
 
 (* ---------- Step + leakage  ------------ *)
 
-(*Add leakage and Statepropagation of Store
-   leak = dep(old(dst)) ∪ dep(mem[ofs]) ∪ old(opR) ∪ old(opA) *)
-
 let z_to_int_opt (z : coq_Z) : int option =
   if Sectrafo_util.coqz_fits_int z then (Sectrafo_util.coqz_to_int_opt z) else None
 
-let leak_load2 (e:env2) (dst:var_i) (src:var_i) (ofs:coq_Z) (w:wsize) (pos : int) : env2 *  leak2_set * countermeasures =
+(*Builds the stateful leakage of i if i matches load*)
+let build_leak_load (e:env2) (dst:var_i) (src:var_i) (ofs:coq_Z) (w:wsize) (pos : int) : env2 *  leak2_set * countermeasures =
   let modul = match w with
   | U8 -> 1
   | U16 -> 2
@@ -1658,8 +1367,6 @@ let leak_load2 (e:env2) (dst:var_i) (src:var_i) (ofs:coq_Z) (w:wsize) (pos : int
   let cR = IntSet.cardinal mR in
   
 
-
-
   let leak = let c = IntSet.cardinal (masking2_union (masking2_union mB mS) mA)  in 
 
                 if c > 0 then
@@ -1706,13 +1413,8 @@ let leak_load2 (e:env2) (dst:var_i) (src:var_i) (ofs:coq_Z) (w:wsize) (pos : int
   (e, leak_at, countermeasure)
   
   
-
-
-let mem_val_is_random (k : skey) (m : mem2_rnd) : bool =
-  if ( (ShareMap.mem k m) && (ShareMap.find k m >= 0) ) then begin true end else false
-  
-
-let step_load2 (e:env2) (dst:var_i) (ofs:coq_Z) (src:var_i) (w: wsize): env2 =
+(*Builds the resedue state after execution of i if i matches load*)
+let build_state_load (e:env2) (dst:var_i) (ofs:coq_Z) (src:var_i) (w: wsize): env2 =
   
   let divisor = match w with
   | U8 -> 1
@@ -1746,9 +1448,9 @@ let step_load2 (e:env2) (dst:var_i) (ofs:coq_Z) (src:var_i) (w: wsize): env2 =
                      opAO = om; opBO = os; opRO = om}}
 
 
+(*Builds the stateful leakage of i if i matches xor or and*)
+let build_leak_binop (e:env2) (dst:var_i) (v1:var_i) (v2:var_i) (opt:string) (pos : int) : env2 * leak2_set * countermeasures =
 
-let leak_binop2 (e:env2) (dst:var_i) (v1:var_i) (v2:var_i) (opt:string) (pos : int) : env2 * leak2_set * countermeasures =
-  (*let old_dst = get_reg2 e dst in*)
   let d1 = get_reg2 e v1 in
   let d2 = get_reg2 e v2 in
 
@@ -1876,8 +1578,8 @@ let leak_binop2 (e:env2) (dst:var_i) (v1:var_i) (v2:var_i) (opt:string) (pos : i
   
   (e, leak_at, countermeasure)
   
-
-let step_binop2 (e:env2) (dst:var_i) (v1:var_i) (v2:var_i) (opt:string) : env2 =
+(*Builds the resedue state after execution of i if i matches xor or and*)
+let build_state_binop (e:env2) (dst:var_i) (v1:var_i) (v2:var_i) (opt:string) : env2 =
 
   let d1 = get_reg2 e v1 in
   let d2 = get_reg2 e v2 in
@@ -1921,15 +1623,11 @@ let step_binop2 (e:env2) (dst:var_i) (v1:var_i) (v2:var_i) (opt:string) : env2 =
   end
   else e1 in 
 
-  
-  
-
-
-
   { e1 with st = { e1.st with opA = d1; opB = d2; opAM = m1; opBM = m2 } }
 
 
-  let leak_mov2 (e:env2) (dst:var_i) (src:var_i) (pos : int) : env2 * leak2_set * countermeasures =
+  (*Builds the stateful leakage of i if i matches move*)
+  let build_leak_move (e:env2) (dst:var_i) (src:var_i) (pos : int) : env2 * leak2_set * countermeasures =
   let old_dst = get_reg2 e dst in
   let dsrc = get_reg2 e src in
 
@@ -2022,7 +1720,8 @@ let step_binop2 (e:env2) (dst:var_i) (v1:var_i) (v2:var_i) (opt:string) : env2 =
   
   (e, leak_at, countermeasure)
 
-let step_mov2 (e:env2) (dst:var_i) (src:var_i) : env2 =
+(*Builds the resedue state after execution of i if i matches move*)
+let build_state_move (e:env2) (dst:var_i) (src:var_i) : env2 =
   let dsrc = get_reg2 e src in
   let rnd = get_reg2_rnd e src in 
   
@@ -2039,7 +1738,8 @@ let step_mov2 (e:env2) (dst:var_i) (src:var_i) : env2 =
 
   { e1 with st = { e1.st with opA = (get_reg2 e src); opB = dsrc; opAM = m2; opBM = m1; opAO = od; opBO = os  } }
 
-let leak_store2 (e:env2) (dst:var_i) (ofs:coq_Z) (src:var_i) (w: wsize) (pos : int) : env2 * leak2_set * countermeasures =
+(*Builds the stateful leakage of i if i matches store*)
+let build_leak_store (e:env2) (dst:var_i) (ofs:coq_Z) (src:var_i) (w: wsize) (pos : int) : env2 * leak2_set * countermeasures =
 
   let dsrc = get_reg2 e src in
   let divisor = match w with
@@ -2175,8 +1875,8 @@ let leak_store2 (e:env2) (dst:var_i) (ofs:coq_Z) (src:var_i) (w: wsize) (pos : i
   
 
 
-
-let step_store2 (e:env2) (dst : var_i) (ofs:coq_Z) (src:var_i) (w:wsize) : env2 =
+(*Builds the resedue state after execution of i if i matches store*)
+let build_state_store (e:env2) (dst : var_i) (ofs:coq_Z) (src:var_i) (w:wsize) : env2 =
 
     let dsrc = get_reg2 e src in
     let rnd = get_reg2_rnd e src in 
@@ -2201,8 +1901,6 @@ let step_store2 (e:env2) (dst : var_i) (ofs:coq_Z) (src:var_i) (w:wsize) : env2 
     let e1 = set_mem2 e1 (dst, ofsint /divisior) dsrc in
     let e1 = set_mem2_rnd e1 (dst, ofsint/divisior) rnd in
 
-
-
     let mask = get_reg2_masking e1 src in 
     let e1 =  set_mem2_masking e1 (dst, (ofsint/divisior)) mask in  
 
@@ -2211,12 +1909,6 @@ let step_store2 (e:env2) (dst : var_i) (ofs:coq_Z) (src:var_i) (w:wsize) : env2 
                      opAO = od; opBO = os; opWO = os} }
   
 
-
-
-
-(* Default: if instruction not recognized yet, no change + leak old-state For now: leak empty. *)
-let leak_default2 (_e:env2) (_i:'asm_op instr) : dep2 = dep2_empty
-let step_default2 (e:env2) (_i:'asm_op instr) : env2 = e
 
 
 
@@ -2233,7 +1925,7 @@ let offset_of_lval_mem2 (lv : lval) : (var_i * coq_Z * wsize) option =
   | Lmem (_al, _ws, _vi, addr) -> offset_of_addr_expr2 addr
   | _ -> None
 
-
+(*helper function that matches instruction i to instruction type xor or and*)
 let match_binop_regs2 (i : 'asm_op instr) (asmop): (var_i * var_i * var_i * string) option =
   match i with
   | MkI (_, Copn (outs, _tag, op, ins)) ->
@@ -2248,7 +1940,7 @@ let match_binop_regs2 (i : 'asm_op instr) (asmop): (var_i * var_i * var_i * stri
       end
   | _ -> None
 
-
+(*helper function that matches instruction i to instruction type move*)
 let match_mov_reg2 (i : 'asm_op instr) : (var_i * var_i) option =
   match i with
   | MkI (_, Copn (outs, _tag, op, ins)) ->
@@ -2262,7 +1954,7 @@ let match_mov_reg2 (i : 'asm_op instr) : (var_i * var_i) option =
       end
   | _ -> None
 
-
+(*helper function that matches instruction i to instruction type store*)
 let match_store_sp_ofs2 asmop (i : 'asm_op instr) : (var_i* coq_Z * var_i * wsize) option =
   match i with
   | MkI (_, Copn (outs, _tag, op, ins)) ->
@@ -2282,79 +1974,43 @@ let match_store_sp_ofs2 asmop (i : 'asm_op instr) : (var_i* coq_Z * var_i * wsiz
       end
   | _ -> None
 
- 
-let compute_leak2 asmop (e:env2) (i:'asm_op instr) (pos : int) : env2 * leak2_set * countermeasures =  
+(*Build Leak is part of Transform and builds the stateful leakage of i*) 
+let build_leak asmop (e:env2) (i:'asm_op instr) (pos : int) : env2 * leak2_set * countermeasures =  
   match match_load_ofs2 i asmop with
-  | Some (dst, src, ofs, w) -> leak_load2 e dst src ofs w pos
+  | Some (dst, src, ofs, w) -> build_leak_load e dst src ofs w pos
   | None ->
     match match_store_sp_ofs2 asmop i with
-    | Some ((dst:var_i), (ofs:coq_Z), (src:var_i), (w: wsize)) -> leak_store2 e dst ofs src w pos
+    | Some ((dst:var_i), (ofs:coq_Z), (src:var_i), (w: wsize)) -> build_leak_store e dst ofs src w pos
     | None ->
       match match_binop_regs2 i asmop with
-      | Some (dst, v1, v2, op ) -> leak_binop2 e dst v1 v2 op pos
+      | Some (dst, v1, v2, op ) -> build_leak_binop e dst v1 v2 op pos
       | None ->
         match match_mov_reg2 i with
-        | Some (dst, src) -> leak_mov2 e dst src pos
+        | Some (dst, src) -> build_leak_move e dst src pos
         | None -> (e, leak2_set_empty, countermeasures_empty)
 
-let step_instr2 asmop (e:env2) (i:'asm_op instr) : env2 =
+(*Build state is part of Transform and builds the resedue state after execution of i*)
+let build_state asmop (e:env2) (i:'asm_op instr) : env2 =
   match match_load_ofs2 i asmop with
-  | Some (dst, src, ofs, w) -> step_load2 e dst ofs src w
+  | Some (dst, src, ofs, w) -> build_state_load e dst ofs src w
   | None ->
     match match_store_sp_ofs2 asmop i with
-    | Some (dst, ofs, src, w) -> step_store2 e dst ofs src w
+    | Some (dst, ofs, src, w) -> build_state_store e dst ofs src w
     | None ->
       match match_binop_regs2 i asmop with
-      | Some (dst, v1, v2, opn) -> step_binop2 e dst v1 v2 opn
+      | Some (dst, v1, v2, opn) -> build_state_binop e dst v1 v2 opn
       | None ->
         match match_mov_reg2 i with
-        | Some (dst, src) -> step_mov2 e dst src
+        | Some (dst, src) -> build_state_move e dst src
         | None -> e
 
-(*Analyze body*)
-
-
-
 let debug_full_analysis = false
-
-
-
-
-
-(* --------- entry tagging for per-index provenance (pos, idx, plus leak/mask/cm) --------- *)
-
-type entry = {
-  pos  : int;        (* rleak.position *)
-  idx  : int;        (* index inside arrays *)
-  leak : dep2;
-  mask : masking2;
-  cm   : cm;
-  op : bool; 
-}
-
-
-
-(* t-combinations *)
-let rec comb t lst =
-  match t, lst with
-  | 0, _ -> [ [] ]
-  | _, [] -> []
-  | t, x :: xs ->
-      List.map (fun c -> x :: c) (comb (t-1) xs)
-      @ comb t xs
-
-let subsets_2_to_t lst t =
-  let rec aux i acc =
-    if i > t then acc
-    else aux (i + 1) (comb i lst @ acc)
-  in
-  aux 2 []
 
 
 let obs_list_to_set ol =
   List.fold_left (fun acc o -> ObsSet.add o acc) ObsSet.empty ol
 
-
+(*Helper function that checks the security of one subset*)
 let check_security s t = 
   if s = [] then false else begin 
   (*print_endline (Printf.sprintf "Size of s =  %i " (List.length s));*)
@@ -2363,15 +2019,13 @@ let check_security s t =
   has_conflicting_share_indices_t sis  t end 
   
 
-
+(*exists subsets checks if in all observation exists a security breaking subset of at most size t*)
 let exists_subset (a_set : RleakSet.t ) (b_set: RleakSet.t) t (cm_at : countermeasures array) =
   let a_arr = Array.of_list (RleakSet.elements a_set) in
   let b_arr = Array.of_list (RleakSet.elements b_set) in
   let n = Array.length b_arr in
   let k = t - 1  in
   let s = 1 in
-
-
   let rec choose k s start (acc: observation list) op (a:rleak) =
     (*print_endline (Printf.sprintf "t = %i Size of k =  %i, size of s = %i and size of start = %i " t k s start );*)
     if k = 0 then begin     
@@ -2387,26 +2041,9 @@ let exists_subset (a_set : RleakSet.t ) (b_set: RleakSet.t) t (cm_at : counterme
         else
           choose k s (start + 1) acc op a
   in
-
-  (*let rec choose k s start (acc: observation list) op (a:rleak) =
-    (*print_endline (Printf.sprintf "t = %i Size of k =  %i, size of s = %i and size of start = %i " t k s start );*)
-    if k = 0 then begin     
-      check_security (a.obs :: acc) (s - op) && not (check_security (acc) (s - op -1)) end 
-    else if start >= n then
-      false
-    else
-        let x = b_arr.(start) in 
-        let op = if x.op then op + 1 else op in 
-        let c1 = (choose (k - 1) (s + 1) (start + 1) (x.obs :: acc) 0 a) in 
-        let c2 = (choose k s (start + 1) acc op a) in
-        c1 || c2 
-  in*)
-  
-  Array.iter (fun (a:rleak) -> 
-    
+  Array.iter (fun (a:rleak) ->   
     if  (choose k s 0 [] 0 a) 
       then begin 
-       
         let cm = match a.cm with 
         | Clear OPA -> {cm_at.(a.pos) with clearOPA = true}
         | Clear OPB -> {cm_at.(a.pos) with clearOPB = true}
@@ -2418,8 +2055,9 @@ let exists_subset (a_set : RleakSet.t ) (b_set: RleakSet.t) t (cm_at : counterme
       else ()) a_arr
   
 
-
-let analyze_body2 asmop (input_map:smap) (rmap:rmap) (omap:smap) (body : 'asm_op instr list) t : analysis_results2 =
+(*reduce analyzes the stateful leakages for all instruction i and taggs
+i for clearing if needed*)
+let reduce asmop (input_map:smap) (rmap:rmap) (omap:smap) (body : 'asm_op instr list) t : analysis_results2 =
   (*print_string ("\n\nHere is the Start of Analyzebody\n\n");*)
   let ins_arr = Array.of_list body in
   let n = Array.length ins_arr in
@@ -2433,22 +2071,19 @@ let analyze_body2 asmop (input_map:smap) (rmap:rmap) (omap:smap) (body : 'asm_op
   let masking_at = Array.make n masking2_empty in 
 
   let e = ref (init2_env_from_input_smap_rmap input_map rmap) in
-  (*
-  print_endline("---env after init2_env_from_input_map:");
-  print_env !e; *)
 
   for idx = 0 to n - 1 do
     let i = ins_arr.(idx) in
 
     (* 1) compute leak using old env/state *)
-    let (e', lk, cm) = compute_leak2 asmop !e i idx in
+    let (e', lk, cm) = build_leak asmop !e i idx in
     leak_at.(idx) <- lk;
     (*countermeasures_at.(idx) <- cm;*) 
     e := e';
 
     
     (* 2) step to new env *)
-    let e' = step_instr2 asmop !e i in
+    let e' = build_state asmop !e i in
 
 
     (*let mask = !e.regmasking in 
@@ -2474,7 +2109,8 @@ let analyze_body2 asmop (input_map:smap) (rmap:rmap) (omap:smap) (body : 'asm_op
 
   { reg_after; mem_after; state_after; leak_at; masking_at; countermeasures_at}
 
-
+(*get_Information and get_lvar are helper functions that collect meta information needed to 
+build countermeasure instructions*)
 let get_Information instr = match instr with 
   | MkI (ii, _) -> ii
 
@@ -2491,23 +2127,18 @@ let get_lvar i asmop : Expr.var_i option =
         match match_mov_reg2 i with
         | Some (dst, src) -> Some dst
         | None -> None
-  
-  
-  
-  (*match instr with 
-  | MkI (_, Copn ([Lvar lvar], _, _, _)) -> Some lvar
-  | MkI (_, Cassgn (Lvar lvar, _, _, _)) -> Some lvar
-  | _ -> None*)
 
 module VarISet = Set.Make(Reg2KeyOrd)
 
-let regs_of_reg_after (reg_after : reg2_deps array) : VarISet.t =
+(*Helper function determining all registers used in calculation*)
+let regs_of_reg_after (reg_after ) : VarISet.t =
   Array.fold_left (fun acc m ->
-    RegMap2.fold (fun (r : var_i) (_d : dep2) acc -> 
+    RegMap2.fold (fun (r : var_i) (d ) acc -> 
       VarISet.add r acc
     ) m acc
   ) VarISet.empty reg_after
 
+  (*Helper fumction to inserting one clean up scrub*)
   let scrubs_for_all_regs 
   ~(asmop : 'asm_op asmOp)
   ~(ii : IInfo.t)
@@ -2520,11 +2151,10 @@ let regs_of_reg_after (reg_after : reg2_deps array) : VarISet.t =
        let gvar = {gv = r0; gs = Slocal} in
        let clear = 
        Sectrafo_util_clearing.clear_opA_and_opB ~asmop ~ii ~r0:r0 ~r0_gv:gvar in
-
-       (*Sectrafo_util_clearing.clear_opA_and_opB ~asmop ~ii:info ~r0:r0 ~r0_gv:gvar in*)
       [scrub; clear]
      )
   
+  (*Scrubs all registers used in the calculation by insertion of clean up countermeasures*)
   let scrub_all_regs_from_reg_after
   ~(asmop : 'asm_op asmOp)
   ~(reg_after : reg2_deps array)
@@ -2565,28 +2195,14 @@ let regs_of_reg_after (reg_after : reg2_deps array) : VarISet.t =
             | U256 -> 32 * (ofs + 1) in
       let mult1 = coqZ_of_int mult in 
 
+      let clearOPAB = Sectrafo_util_clearing.clear_opA_and_opB ~asmop ~ii:ii ~r0:r0 ~r0_gv:gv_r0 in      
       let clearOPW = Sectrafo_util_clearing.clear_opW ~asmop ~pd:w ~ii ~dst:gv_r0 ~sp_gv:gv_m0 ~ofs:mult1 ~al:Aligned ~ws:w in
       let clearOPR = Sectrafo_util_clearing.clear_opR ~asmop ~pd:w ~ii ~dst:r0 ~sp_gv:gv_m0 ~ofs:mult ~al:Aligned ~ws:w in
 
-       body @ scrubs @ [clearOPW] @ [clearOPR] 
+       body @ [clearOPAB] @ scrubs @ [clearOPW] @ [clearOPR] 
 
-let rec has_opA c :bool = match c with
-    | [] -> false
-    | OPA :: rst -> true
-    | _ :: rst -> has_opA rst
-let rec has_opB c :bool = match c with
-    | [] -> false
-    | OPB :: rst -> true
-    | _ :: rst -> has_opB rst
-let rec has_opR c :bool = match c with
-    | [] -> false
-    | OPR :: rst -> true
-    | _ :: rst -> has_opR rst
-let rec has_opW c :bool = match c with
-    | [] -> false
-    | OPW :: rst -> true
-    | _ :: rst -> has_opW rst
 
+(*Helper function to check if i is tagged for scrubbing*)
 let  has_scrub_reg s : var_i option = match s with
     | Reg x -> Some x
     | _ -> None
@@ -2596,6 +2212,9 @@ let has_scrub_mem s : (var_i * int) option = match s with
     | _ -> None
  
 let debug_insert_countermeasure = false
+
+(*Transforms one i into a hardend hi by inserting countermeasures clear(OPX) or scrub(V), if clearing
+  of opA, opB, opR, opW ord R is tagged *)
 let insert_counternmeasure asmop instr (cm :countermeasures) r0 (m0:rkey) i : 'asm_op instr list= 
   let instr_list = [] in 
   (*let (scrub, clear) = cm in*)
@@ -2609,57 +2228,6 @@ let insert_counternmeasure asmop instr (cm :countermeasures) r0 (m0:rkey) i : 'a
 
   let lvar = get_lvar instr asmop in 
   let info = get_Information instr in 
-
-
-  let () = if debug_insert_countermeasure then begin 
-  print_endline (Printf.sprintf "#-#-#-#-#Instruction i = %i" i);
-  print_countermeasure cm;
-  let () = match opA with 
-  | true -> print_string "opA: true "
-  | fales -> print_string"opA: false " in 
-  let () = match opB with 
-  | true -> print_string "opB: true "
-  | fales -> print_string"opB: false " in 
-  let () = match opR with 
-  | true -> print_string "opR: true "
-  | fales -> print_string"opR: false " in 
-  let () = match opW with 
-  | true -> print_string "opW: true "
-  | fales -> print_string"opW: false " in 
-  print_endline""; 
-  print_string"------";
-  let () = match sReg with
-    | Some _ -> print_string "sReg: true "
-    | None -> print_string "sReg: false " in 
-
-  let () = match sMem with
-    | Some _ -> print_string "sMem: true "
-    | None -> print_string "sMem: false " in 
-  print_endline""; 
-
-    let (infos,_ ) = info in 
-
-  let print_var_info (vi:var_info) = 
-    let name = vi.loc_fname in 
-    let (a,b) = vi.loc_start in 
-    let (c,d) = vi.loc_end in 
-    print_string "---------Var_info: "; 
-    print_string name; print_string " ";
-    print_int a; print_string ","; print_int b; print_string" ";
-    print_int c; print_string ","; print_int d; print_string" ";
-    print_endline "";
-
-in  
-
-  let test = infos.base_loc in 
-  let test2 = infos.uid_loc in 
-  (*let test3 = infos.stack_loc in *)
-  print_int test2 ; print_endline "<----------- uid ";
-
-  print_var_info test; 
-end else () in 
-
-
   
   let gv_r0 = {gv = r0; gs = Slocal} in 
   let m0Var, m0Ofs = m0 in
@@ -2698,16 +2266,21 @@ end else () in
   
 
    let instr_list = match sMem with
-   | None -> if opW 
+      | None -> if opW 
               then begin  match match_store_sp_ofs2 asmop instr with 
-                | Some (r, i, _ , w) -> let gv_r = {gv = r; gs=Slocal} in let i = Sectrafo_util_clearing.clear_opW ~asmop ~pd:w ~ii:info ~dst:gv_r0 ~sp_gv:gv_r ~ofs:i ~al:Aligned ~ws:w in i::instr_list
+                | Some (r, i, _ , w) -> 
+                  let gv_r = {gv = r; gs=Slocal} in 
+                  let i = Sectrafo_util_clearing.clear_opW ~asmop ~pd:w ~ii:info ~dst:gv_r0 ~sp_gv:gv_r ~ofs:i ~al:Aligned ~ws:w in
+                  i::instr_list
                 | None -> instr_list
-end else instr_list
-   | Some _ -> match match_store_sp_ofs2 asmop instr with 
-                  | Some (r, i, _ , w) -> let gv_r = {gv = r; gs=Slocal} in let i = Sectrafo_util_clearing.clear_opW ~asmop ~pd:w ~ii:info ~dst:gv_r0 ~sp_gv:gv_r ~ofs:i ~al:Aligned ~ws:w in i::instr_list
+                end else instr_list
+        | Some _ -> match match_store_sp_ofs2 asmop instr with 
+                  | Some (r, i, _ , w) -> 
+                    let gv_r = {gv = r; gs=Slocal} in 
+                    let i = Sectrafo_util_clearing.clear_opW ~asmop ~pd:w ~ii:info ~dst:gv_r0 ~sp_gv:gv_r ~ofs:i ~al:Aligned ~ws:w in 
+                    i::instr_list
                   | None -> instr_list 
-   in
-
+      in
 
   
   let instr_list = if ((opA || opB || not (sReg = None) || not (sMem = None) )) then begin 
@@ -2722,33 +2295,21 @@ end else instr_list
   instr_list
 
   
-
-let rec insert_counternmeasures asmop (fbody : 'asm_op instr list) cms idx r0 (m0:rkey) = match fbody with 
+(*Harden replaces all instruction i of fbody with harden hi by inserting countermeasures
+if an observation is tagged for clearing in the countermeasures array cms *)
+let rec harden asmop (fbody : 'asm_op instr list) cms idx r0 (m0:rkey) = match fbody with 
     |[] -> []
-    | i :: rst ->  (insert_counternmeasure asmop i cms.(idx) r0 m0 idx) @ [i] @ (insert_counternmeasures asmop rst cms (idx+1) r0 m0)    
+    | i :: rst ->  (insert_counternmeasure asmop i cms.(idx) r0 m0 idx) @ [i] @ (harden asmop rst cms (idx+1) r0 m0)    
 
 
 
 let tag_deps_in_body2 asmop smap rmap omap (body : 'asm_op instr list) r0 (m0:rkey) t w  : 'asm_op instr list =
   
-
-  let res = analyze_body2 asmop smap rmap omap body t in
+  let res = reduce asmop smap rmap omap body t in
   
   let cms = res.countermeasures_at in 
 
-  let body = insert_counternmeasures asmop body cms (0) r0 m0 in 
-
-  (*let body_arr = Array.of_list body in 
-  let n = Array.length body_arr in 
-
-  for idx = 0 to  n-1 do
-    print_int idx;
-    match body_arr.(idx) with 
-    | MkI (_, Copn (_, AT_keep, _, _)) -> print_endline ": CM<-------------------"
-    | MkI (_, Cassgn (_, AT_keep, _, _)) -> print_endline ": CM<-------------------"
-    | _ -> print_endline ": No CM<-------------------------"; 
-  done;*)
-
+  let body = harden asmop body cms (0) r0 m0 in 
   
   let body = scrub_all_regs_from_reg_after ~asmop ~reg_after:res.reg_after body r0 m0 w in 
 
@@ -2758,10 +2319,8 @@ let tag_deps_in_body2 asmop smap rmap omap (body : 'asm_op instr list) r0 (m0:rk
 (* Transform all functions in the program (shell: identity transform_fun_body). *)
 let security_transform_sprog asmop p  =
   
-
   let transform_fundef (fn, fd) =
     
-
     let smap = fd.f_extra.sf_masking_layout in 
     let rmap = fd.f_extra.sf_random_layout in 
     let omap = fd.f_extra.sf_output_layout in 
@@ -2772,9 +2331,6 @@ let security_transform_sprog asmop p  =
     let (r0, _), _ = ShareMap.min_binding smap in 
 
     let m0, _ = RandomnessMap.max_binding rmap in 
-    
-    (*debug_probe_body fd.f_body;*)
-    (*Print count_pload_in body*)
   
   
     let body' = tag_deps_in_body2 asmop smap rmap omap fd.f_body r0 m0 t w in

@@ -1,3 +1,15 @@
+# Contributions made in the scope of the thesis:
+
+Extending src/CIL/expr.ml with new Datatypes to transfer share information via annotations
+Extending src/compile.ml to extract share information of annotations and pass them via meta data to the securitypass
+Creation of src/transformannot.util.ml Contains helper function to read and parse annotations to handle share information and randomness
+Creation of src/CIL/securitytransformation.ml Main contribution containing all logic required to transform t-NI/SNI circuits to stateful t-NI/SNI secure gadgets
+Creation of src/CIL/sectrafi_util.ml Contains helper function and data types required for the security transformation pass
+Cration of src/CIL/sectrafo_util_clearing.ml Contains specific helper function to generate countermeasure instructions.
+
+
+
+
 # Jasmin Compiler
 
 More information about this compiler (build instructions in particular) can be
