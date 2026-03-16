@@ -7,15 +7,13 @@ open Var0
 open Conv 
 
 open Annotations
-
-(* Toggle this when needed *)
 let debug_annot = ref false
 
 let dbg fmt =
   if !debug_annot then Format.eprintf (fmt ^^ "@.")
   else Format.ifprintf Format.err_formatter fmt
 
-(* Pretty printers for raw annotation payloads (helps when parsing fails). *)
+(* Debug helper. *)
 let pp_simple_attr fmt = function
   | Aint i -> Format.fprintf fmt "Aint(%s)" (Z.to_string i)
   | Aid s -> Format.fprintf fmt "Aid(%s)" s
@@ -31,13 +29,11 @@ let pp_attr_opt fmt = function
 let pp_annot fmt (lab, vopt) =
   Format.fprintf fmt "%s=%a" (Location.unloc lab) pp_attr_opt vopt
 
-(* Your helper: find_key should return attribute option list (no unloc here) *)
 let find_key (k : string) (a : annotation list) : attribute option list =
   a
   |> List.filter_map (fun (lab, vopt) ->
         if Location.unloc lab = k then Some vopt else None)
 
-(* Robust field lookup without relying on List.find_map variants *)
 let rec find_field (field : string) (xs : annotation list) : attribute option option =
   match xs with
   | [] -> None
@@ -401,7 +397,7 @@ let pp_key_vi_int fmt (v, i) =
 let pp_rmap fmt (m : rmap) =
   pp_map
     pp_key_vi_int
-    Format.pp_print_int   (* randomness_info = int *)
+    Format.pp_print_int  
     RandomnessMap.iter
     fmt
     m

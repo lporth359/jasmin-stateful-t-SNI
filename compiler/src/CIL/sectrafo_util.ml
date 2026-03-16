@@ -2,7 +2,7 @@ open BinNums
 
 exception CoqZ_to_int_overflow
 
-(* Convert a Coq positive to int, with overflow check. *)
+(* Convert a Coq positive to int*)
 let rec positive_to_int_opt (p : positive) : int option =
   match p with
   | Coq_xH -> Some 1
@@ -28,7 +28,6 @@ let coqz_to_int_opt (z : coq_Z) : int option =
       begin match positive_to_int_opt p with
       | None -> None
       | Some x ->
-          (* We need x <= -min_int to avoid overflow of -x. *)
           let bound = if min_int = 0 then 0 else -min_int in
           if x > bound then None else Some (-x)
       end

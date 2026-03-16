@@ -18,13 +18,7 @@ open Memory_model
 open Stack_alloc_params
 
 
-
-(* -------------------------------------------------------------------------- *)
-(* Coq Z constants (no Zarith)                                                *)
-(* -------------------------------------------------------------------------- *)
-
 let rec positive_of_int (n : int) : positive =
-  (* pre: n >= 1 *)
   if n = 1 then Coq_xH
   else if (n land 1) = 0 then Coq_xO (positive_of_int (n lsr 1))
   else Coq_xI (positive_of_int (n lsr 1))
@@ -63,10 +57,6 @@ let coqz_to_int_opt (z : coq_Z) : int option =
 let coqz_fits_int (z : coq_Z) : bool =
   match coqz_to_int_opt z with Some _ -> true | None -> false
 
-(* -------------------------------------------------------------------------- *)
-(* asmOp / opcode lookup                                                      *)
-(* -------------------------------------------------------------------------- *)
-
 let try_prim_arm (f : bool -> bool -> (string, 'asm_op) result) : 'asm_op option =
   let combos = [ (false,false); (true,false); (false,true); (true,true) ] in
   let rec go = function
@@ -101,9 +91,6 @@ let find_asm_op_exn (asmop : 'asm_op asmOp) (mnemonic : string) : 'asm_op =
       | None ->
           failwith ("find_asm_op_exn: constructor could not build op for: " ^ mnemonic)
 
-(* -------------------------------------------------------------------------- *)
-(* Small IR helpers                                                           *)
-(* -------------------------------------------------------------------------- *)
 
 let ii_of_instr (i : 'asm_op instr) : IInfo.t =
   match i with
@@ -114,9 +101,6 @@ let const_of_pexpr (e : pexpr) : coq_Z option =
   | Pconst z -> Some z
   | Papp1 (_, Pconst z) -> Some z
   | _ -> None
-
-(* Build address expression: sp + k *)
-(* Replace mk_sp_plus_const and the constant in register_scrub *)
 
 let mk_sp_plus_const ~(pd: 'pd) ~(ws:wsize) ~(sp_gv:gvar) ~(ofs:int) : pexpr =
   add pd (Pvar sp_gv) (cast_const pd (coqZ_of_int ofs))
@@ -134,8 +118,6 @@ let register_scrub
   let mov_o0 = find_asm_op_exn asmop "MOV" in
   MkI (ii, Copn ([Lvar reg], AT_keep, Oasm mov_o0, [cast_const pd Z0]))
 
-
-(* LDR dst, [sp + 128] *)
 let clear_opR
   ~(asmop : 'asm_op asmOp)
   ~(pd : 'pd)
@@ -168,8 +150,6 @@ let clear_opW
   MkI (ii, Copn ([out_mem], AT_keep, Oasm str_o0, [Pvar dst]))
 
 
-(* Store [src_gv] into memory at [base_gv + ofs_bytes]. *)
-
 let clear_mem_store_opt
   ~(asmop : 'asm_op asmOp)
   ~(pd : 'pd)
@@ -188,8 +168,6 @@ let clear_mem_store_opt
     let out_mem = Lmem (al, ws, vi, addr) in
     (MkI (ii, Copn ([out_mem], AT_keep, Oasm str_o0, [Pvar src_gv])))
 
-
-(* MOV sp, sp *)
 let clear_opA_and_opB
   ~(asmop : 'asm_op asmOp)
   ~(ii : IInfo.t)
@@ -203,11 +181,5 @@ let clear_opA_and_opB
   in
   MkI (ii, Copn ([Lvar r0], AT_keep, Oasm op, [Pvar r0_gv; Pvar r0_gv]))
 
-  (*let ii = Trafo_util.ii_of_instr i in
-let before = [
-  Trafo_util.register_scrub ~asmop ~ii ~reg:r;
-  Trafo_util.clear_opA_and_opB ~asmop ~ii ~sp ~sp_gv;
-  (* ... *)
-] in
-before @ (i :: rest)*)
+
 

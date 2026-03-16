@@ -1,4 +1,3 @@
-(* securitytransformationpass.ml *)
 open BinInt
 open BinNums
 open Bool
@@ -34,7 +33,7 @@ type reg_id = var_i
 
 
 
-(* --- share map types --- *)
+(*share map types *)
 
 type secret_id = Input of coq_Z
 type share_id  = int
@@ -54,8 +53,6 @@ type share_map = share_info ZMap.t  (* key: stack offset *)
 
 
 (* Debug helpers*)
-
-(* ---- coq_Z -> string (debug) ---- *)
 
 let string_of_coq_positive (p : positive) : string =
   (* Build bits MSB->LSB by recursion *)
@@ -152,8 +149,6 @@ let debug_print_load_match ~(input_map:share_map) (r:reg_id) (ofs:coq_Z) =
         (string_of_coq_Z base) si.sh
 
 
-(* --- precompute per-function maps --- *)
-
 module FnMap = Map.Make(struct
   type t = funname
   let compare = compare
@@ -204,7 +199,6 @@ let rec offset_of_addr_expr (e : pexpr) : coq_Z option =
       end
 
   | Papp2 (Osub _, a, b) ->
-      (* a - b : if we find const in b, negate it *)
       begin match offset_of_addr_expr b with
       | Some z -> Some (Z.opp z)
       | None -> offset_of_addr_expr a
@@ -233,7 +227,7 @@ let offset_of_load_ins (e : pexpr) : coq_Z option =
   | _ -> None
 
 
-(* ---------- Helpers for coq_Z comparisons (Map/Set need int comparison) --- *)
+(*Helpers for coq_Z comparisons (Map/Set need int comparison)*)
 let z_cmp (a : coq_Z) (b : coq_Z) : int =
   match Z.compare a b with
   | Lt -> -1
@@ -1135,9 +1129,6 @@ let add_rleak_output omap (e:env2)  =
   rm 
 
 
-(*Helper functions getter and setter above*)
-
-
 (* Initializeation of the memory dependencies and masking from the annotations input share and randomness map*)
 let init2_env_from_input_smap_rmap (smap : smap) (rmap : rmap) : env2 =
   let mdep =
@@ -1182,7 +1173,7 @@ let init2_env_from_input_smap_rmap (smap : smap) (rmap : rmap) : env2 =
     mobs = mem_obs}
 
 
-(* ---------- Per-instruction analysis results ------------------------------ *)
+(*Per-instruction analysis results*)
 
 type analysis_results2 = {
   reg_after   : reg2_deps array;     (* full RegDep map AFTER instr i *)
@@ -2058,7 +2049,6 @@ let exists_subset (a_set : RleakSet.t ) (b_set: RleakSet.t) t (cm_at : counterme
 (*reduce analyzes the stateful leakages for all instruction i and taggs
 i for clearing if needed*)
 let reduce asmop (input_map:smap) (rmap:rmap) (omap:smap) (body : 'asm_op instr list) t : analysis_results2 =
-  (*print_string ("\n\nHere is the Start of Analyzebody\n\n");*)
   let ins_arr = Array.of_list body in
   let n = Array.length ins_arr in
 
@@ -2078,7 +2068,6 @@ let reduce asmop (input_map:smap) (rmap:rmap) (omap:smap) (body : 'asm_op instr 
     (* 1) compute leak using old env/state *)
     let (e', lk, cm) = build_leak asmop !e i idx in
     leak_at.(idx) <- lk;
-    (*countermeasures_at.(idx) <- cm;*) 
     e := e';
 
     
@@ -2086,8 +2075,6 @@ let reduce asmop (input_map:smap) (rmap:rmap) (omap:smap) (body : 'asm_op instr 
     let e' = build_state asmop !e i in
 
 
-    (*let mask = !e.regmasking in 
-    masking_at.(idx) <- mask;*)
 
     (* 3) snapshot AFTER this instruction *)
     reg_after.(idx) <- e'.rdep;
